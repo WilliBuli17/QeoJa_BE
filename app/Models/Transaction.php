@@ -16,9 +16,9 @@ class Transaction extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'amount_of_product', 'product_price',
-        'total_price', 'status', 'status',
-        'transaction_id', 'product_id'
+        'subtotal_price', 'shipping_cost',
+        'tax', 'grand_total_price', 'receipt_of_payment',
+        'customer_id', 'address_id', 'bank_payment_id', 'transaction_status_id'
     ];
 
     // New functions for Carbon
