@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('amount_of_product');
             $table->integer('product_price');
             $table->integer('total_price');
-            $table->enum('status', ['success', 'fail']);
+            $table->enum('status', ['success', 'pending', 'fail']);
             $table->foreignId('transaction_id')
                 ->nullable()
                 ->constrained('transactions')

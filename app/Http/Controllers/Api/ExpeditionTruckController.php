@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 // Add new library
-use App\Models\Transaction;
+use Illuminate\Validation\Rule;
+use App\Models\ExpeditionTruck;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\File;
 
-class TransactionController extends Controller
+class ExpeditionTruckController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -22,17 +23,13 @@ class TransactionController extends Controller
     public function index()
     {
         try {
-            $transaction = Transaction::join('customers', 'transactions.customer_id', '=', 'customers.id')
-                ->join('addresses', 'transactions.address_id', '=', 'addresses.id')
-                ->join('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
-                ->join('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
-                ->get(['customers.*', 'addresses.*', 'bank_payments.*', 'transaction_statuses.*']);
+            $expeditionTruck = ExpeditionTruck::all();
 
-            if (count($transaction) > 0) {
+            if (count($expeditionTruck) > 0) {
                 $response = [
                     'status' => 'success',
-                    'message' => 'Mengambil Data Transaksi Sukses',
-                    'data' => $transaction,
+                    'message' => 'Mengambil Data Truk Ekspedisi Sukses',
+                    'data' => $expeditionTruck,
                 ];
 
                 return response()->json($response, Response::HTTP_OK);
@@ -40,7 +37,7 @@ class TransactionController extends Controller
 
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengambil Data Transaksi Gagal -> Data Kosong',
+                'message' => 'Mengambil Data Truk Ekspedisi Gagal -> Data Kosong',
                 'data' => null,
             ];
 
@@ -48,7 +45,7 @@ class TransactionController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengambil Data Transaksi Gagal -> Server Error',
+                'message' => 'Mengambil Data Truk Ekspedisi Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -65,18 +62,13 @@ class TransactionController extends Controller
     public function show($id)
     {
         try {
-            $transaction = Transaction::join('customers', 'transactions.customer_id', '=', 'customers.id')
-                ->join('addresses', 'transactions.address_id', '=', 'addresses.id')
-                ->join('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
-                ->join('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
-                ->where('transactions.id', '=', $id)
-                ->get(['customers.*', 'addresses.*', 'bank_payments.*', 'transaction_statuses.*']);
+            $expeditionTruck = ExpeditionTruck::find($id);
 
-            if (count($transaction) != 1) {
+            if (!is_null($expeditionTruck)) {
                 $response = [
                     'status' => 'success',
-                    'message' => 'Mencari Data Transaksi Sukses',
-                    'data' => $transaction,
+                    'message' => 'Mencari Data Truk Ekspedisi Sukses',
+                    'data' => $expeditionTruck,
                 ];
 
                 return response()->json($response, Response::HTTP_OK);
@@ -84,7 +76,7 @@ class TransactionController extends Controller
 
             $response = [
                 'status' => 'fails',
-                'message' => 'Mencari Data Transaksi Gagal -> Data Kosong',
+                'message' => 'Mencari Data Truk Ekspedisi Gagal -> Data Kosong',
                 'data' => null,
             ];
 
@@ -92,7 +84,7 @@ class TransactionController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mencari Data Transaksi Gagal -> Server Error',
+                'message' => 'Mencari Data Truk Ekspedisi Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -109,31 +101,25 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'subtotal_price' => 'required|numeric',
-            'shipping_cost' => 'required|numeric',
-            'tax' => 'required|numeric',
-            'grand_total_price' => 'required|numeric',
-            'customer_id' => 'required',
-            'address_id' => 'required',
-            'bank_payment_id' => 'required',
-            'transaction_status_id' => 'required'
+            'license_id' => 'required|unique:expedition_trucks',
+            'min_volume' => 'required|numeric',
+            'max_volume' => 'required|numeric',
+            'status' => 'required|in:available,not available',
         ];
 
         $input = [
-            'subtotal_price' => $request->input('subtotal_price'),
-            'shipping_cost' => $request->input('shipping_cost'),
-            'tax' => $request->input('tax'),
-            'grand_total_price' => $request->input('grand_total_price'),
-            'receipt_of_payment' => 'no_image.png',
-            'customer_id' => $request->input('customer_id'),
-            'address_id' => $request->input('address_id'),
-            'bank_payment_id' => $request->input('bank_payment_id'),
-            'transaction_status_id' => $request->input('transaction_status_id'),
+            'license_id' => $request->input('license_id'),
+            'min_volume' => $request->input('min_volume'),
+            'max_volume' => $request->input('max_volume'),
+            'picture' => 'no_image.png',
+            'status' => $request->input('status')
         ];
 
         $message = [
             'required' => 'Kolom :attribute wajib diisi.',
+            'unique' => 'Kolom :attribute sudah terdaftar.',
             'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
+            'in' => 'Kolom :attribute tidak valid.'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -141,7 +127,7 @@ class TransactionController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Transaksi Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Truk Ekspedisi Gagal -> ' . $validator->errors(),
                 'data' => null,
             ];
 
@@ -149,23 +135,23 @@ class TransactionController extends Controller
         }
 
         try {
-            if (!is_null($request->file('receipt_of_payment'))) {
-                $input['receipt_of_payment'] = $this->uploadFile('storage/transaction', $request->file('receipt_of_payment'));
+            if (!is_null($request->file('picture'))) {
+                $input['picture'] = $this->uploadFile('storage/expeditionTruck', $request->file('picture'));
             }
 
-            $transaction = Transaction::create($input);
+            $expeditionTruck = ExpeditionTruck::create($input);
 
             $response = [
                 'status' => 'success',
-                'message' => 'Menambah Data Transaksi Sukses',
-                'data' => $transaction,
+                'message' => 'Menambah Data Truk Ekspedisi Sukses',
+                'data' => $expeditionTruck,
             ];
 
             return response()->json($response, Response::HTTP_CREATED);
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Transaksi Gagal -> Server Error',
+                'message' => 'Menambah Data Truk Ekspedisi Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -182,12 +168,12 @@ class TransactionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $transaction = Transaction::find($id);
+        $expeditionTruck = ExpeditionTruck::find($id);
 
-        if (is_null($transaction)) {
+        if (is_null($expeditionTruck)) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Transaksi Gagal -> Data Tidak Ditemukan',
+                'message' => 'Mengubah Data Truk Ekspedisi Gagal -> Data Tidak Ditemukan',
                 'data' => null,
             ];
 
@@ -195,31 +181,25 @@ class TransactionController extends Controller
         }
 
         $rule = [
-            'subtotal_price' => 'required|numeric',
-            'shipping_cost' => 'required|numeric',
-            'tax' => 'required|numeric',
-            'grand_total_price' => 'required|numeric',
-            'customer_id' => 'required',
-            'address_id' => 'required',
-            'bank_payment_id' => 'required',
-            'transaction_status_id' => 'required'
+            'license_id' => ['required', Rule::unique('expedition_trucks', 'license_id')->ignore($id)],
+            'min_volume' => 'required|numeric',
+            'max_volume' => 'required|numeric',
+            'status' => 'required|in:available,not available',
         ];
 
         $input = [
-            'subtotal_price' => $request->input('subtotal_price'),
-            'shipping_cost' => $request->input('shipping_cost'),
-            'tax' => $request->input('tax'),
-            'grand_total_price' => $request->input('grand_total_price'),
-            'receipt_of_payment' => $transaction->receipt_of_payment,
-            'customer_id' => $request->input('customer_id'),
-            'address_id' => $request->input('address_id'),
-            'bank_payment_id' => $request->input('bank_payment_id'),
-            'transaction_status_id' => $request->input('transaction_status_id'),
+            'license_id' => $request->input('license_id'),
+            'min_volume' => $request->input('min_volume'),
+            'max_volume' => $request->input('max_volume'),
+            'picture' => $expeditionTruck->picture,
+            'status' => $request->input('status')
         ];
 
         $message = [
             'required' => 'Kolom :attribute wajib diisi.',
+            'unique' => 'Kolom :attribute sudah terdaftar.',
             'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
+            'in' => 'Kolom :attribute tidak valid.'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -227,7 +207,7 @@ class TransactionController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Transaksi Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Truk Ekspedisi Gagal -> ' . $validator->errors(),
                 'data' => null,
             ];
 
@@ -235,24 +215,24 @@ class TransactionController extends Controller
         }
 
         try {
-            if (!is_null($request->file('receipt_of_payment'))) {
-                $this->destroyFile($transaction->receipt_of_payment);
-                $input['receipt_of_payment'] = $this->uploadFile('storage/transaction', $request->file('receipt_of_payment'));
+            if (!is_null($request->file('picture'))) {
+                $this->destroyFile($expeditionTruck->picture);
+                $input['picture'] = $this->uploadFile('storage/expeditionTruck', $request->file('picture'));
             }
 
-            $transaction->update($input);
+            $expeditionTruck->update($input);
 
             $response = [
                 'status' => 'success',
-                'message' => 'Mengubah Data Transaksi Sukses',
-                'data' => $transaction,
+                'message' => 'Mengubah Data Truk Ekspedisi Sukses',
+                'data' => $expeditionTruck,
             ];
 
             return response()->json($response, Response::HTTP_OK);
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Transaksi Gagal -> Server Error',
+                'message' => 'Mengubah Data Truk Ekspedisi Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -268,12 +248,12 @@ class TransactionController extends Controller
      */
     public function destroy($id)
     {
-        $transaction = Transaction::find($id);
+        $expeditionTruck = ExpeditionTruck::find($id);
 
-        if (is_null($transaction)) {
+        if (is_null($expeditionTruck)) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menghapus Data Transaksi Gagal -> Data Tidak Ditemukan',
+                'message' => 'Menghapus Data Truk Ekspedisi Gagal -> Data Tidak Ditemukan',
                 'data' => null,
             ];
 
@@ -281,20 +261,20 @@ class TransactionController extends Controller
         }
 
         try {
-            $this->destroyFile($transaction->receipt_of_payment);
-            $transaction->delete();
+            $this->destroyFile($expeditionTruck->picture);
+            $expeditionTruck->delete();
 
             $response = [
                 'status' => 'success',
-                'message' => 'Menghapus Data Transaksi Sukses',
-                'data' => $transaction,
+                'message' => 'Menghapus Data Truk Ekspedisi Sukses',
+                'data' => $expeditionTruck,
             ];
 
             return response()->json($response, Response::HTTP_OK);
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menghapus Data Transaksi Gagal -> Server Error',
+                'message' => 'Menghapus Data Truk Ekspedisi Gagal -> Server Error',
                 'data' => null,
             ];
 
