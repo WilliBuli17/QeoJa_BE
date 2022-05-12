@@ -7,13 +7,12 @@ use Illuminate\Http\Request;
 
 // Add new library
 use Illuminate\Validation\Rule;
-use App\Models\Product;
+use App\Models\TransactionStatus;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\File;
 
-class ProductController extends Controller
+class TransactionStatusController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -23,16 +22,13 @@ class ProductController extends Controller
     public function index()
     {
         try {
-            $product = Product::join('categories', 'products.category_id', '=', 'categories.id')
-                ->join('supliers', 'products.suplier_id', '=', 'supliers.id')
-                ->withTrashed()
-                ->get(['categories.name', 'supliers.*', 'products.*']);
+            $transactionStatus = TransactionStatus::all();
 
-            if (count($product) > 0) {
+            if (count($transactionStatus) > 0) {
                 $response = [
                     'status' => 'success',
-                    'message' => 'Mengambil Data Produk Sukses',
-                    'data' => $product,
+                    'message' => 'Mengambil Data Status Transaksi Sukses',
+                    'data' => $transactionStatus,
                 ];
 
                 return response()->json($response, Response::HTTP_OK);
@@ -40,7 +36,7 @@ class ProductController extends Controller
 
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengambil Data Produk Gagal -> Data Kosong',
+                'message' => 'Mengambil Data Status Transaksi Gagal -> Data Kosong',
                 'data' => null,
             ];
 
@@ -48,7 +44,7 @@ class ProductController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengambil Data Produk Gagal -> Server Error',
+                'message' => 'Mengambil Data Status Transaksi Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -65,17 +61,13 @@ class ProductController extends Controller
     public function show($id)
     {
         try {
-            $product = Product::join('categories', 'products.category_id', '=', 'categories.id')
-                ->join('supliers', 'products.suplier_id', '=', 'supliers.id')
-                ->withTrashed()
-                ->where('products.id', '=', $id)
-                ->get(['categories.name', 'supliers.*', 'products.*']);
+            $transactionStatus = TransactionStatus::find($id);
 
-            if (count($product) != 1) {
+            if (!is_null($transactionStatus)) {
                 $response = [
                     'status' => 'success',
-                    'message' => 'Mencari Data Produk Sukses',
-                    'data' => $product,
+                    'message' => 'Mencari Data Status Transaksi Sukses',
+                    'data' => $transactionStatus,
                 ];
 
                 return response()->json($response, Response::HTTP_OK);
@@ -83,7 +75,7 @@ class ProductController extends Controller
 
             $response = [
                 'status' => 'fails',
-                'message' => 'Mencari Data Produk Gagal -> Data Kosong',
+                'message' => 'Mencari Data Status Transaksi Gagal -> Data Kosong',
                 'data' => null,
             ];
 
@@ -91,7 +83,7 @@ class ProductController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mencari Data Produk Gagal -> Server Error',
+                'message' => 'Mencari Data Status Transaksi Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -108,31 +100,17 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'name' => 'required|unique:products',
-            'description' => 'required',
-            'unit' => 'required',
-            'volume' => 'required|numeric',
-            'price' => 'required|numeric',
-            'category_id' => 'required',
-            'suplier_id' => 'required'
+            'name' => 'required|max:60|unique:transaction_statuses'
         ];
 
         $input = [
-            'name' => $request->input('name'),
-            'description' => $request->input('description'),
-            'unit' => $request->input('unit'),
-            'volume' => $request->input('volume'),
-            'price' => $request->input('price'),
-            'picture' => 'no_image.png',
-            'stock_quantity' => 0,
-            'category_id' => $request->input('category_id'),
-            'suplier_id' => $request->input('suplier_id'),
+            'name' => $request->input('name')
         ];
 
         $message = [
             'required' => 'Kolom :attribute wajib diisi.',
             'unique' => 'Kolom :attribute sudah terdaftar.',
-            'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
+            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -140,7 +118,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Produk Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Status Transaksi Gagal -> ' . $validator->errors(),
                 'data' => null,
             ];
 
@@ -148,23 +126,19 @@ class ProductController extends Controller
         }
 
         try {
-            if (!is_null($request->file('picture'))) {
-                $input['picture'] = $this->uploadFile('storage/product', $request->file('picture'));
-            }
-
-            $product = Product::create($input);
+            $transactionStatus = TransactionStatus::create($input);
 
             $response = [
                 'status' => 'success',
-                'message' => 'Menambah Data Produk Sukses',
-                'data' => $product,
+                'message' => 'Menambah Data Status Transaksi Sukses',
+                'data' => $transactionStatus,
             ];
 
             return response()->json($response, Response::HTTP_CREATED);
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Produk Gagal -> Server Error',
+                'message' => 'Menambah Data Status Transaksi Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -181,14 +155,12 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $product = Product::withTrashed()
-            ->where('id', '=', $id)
-            ->get();
+        $transactionStatus = TransactionStatus::find($id);
 
-        if (count($product) != 1) {
+        if (is_null($transactionStatus)) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Produk Gagal -> Data Tidak Ditemukan',
+                'message' => 'Mengubah Data Status Transaksi Gagal -> Data Tidak Ditemukan',
                 'data' => null,
             ];
 
@@ -196,31 +168,17 @@ class ProductController extends Controller
         }
 
         $rule = [
-            'name' => ['required', Rule::unique('products', 'name')->ignore($id)],
-            'description' => 'required',
-            'unit' => 'required',
-            'volume' => 'required|numeric',
-            'price' => 'required|numeric',
-            'category_id' => 'required',
-            'suplier_id' => 'required'
+            'name' => ['required', 'max:60', Rule::unique('transaction_statuses', 'name')->ignore($id)]
         ];
 
         $input = [
-            'name' => $request->input('name'),
-            'description' => $request->input('description'),
-            'unit' => $request->input('unit'),
-            'volume' => $request->input('volume'),
-            'price' => $request->input('price'),
-            'picture' => $product->picture,
-            'stock_quantity' => $product->stock_quantity,
-            'category_id' => $request->input('category_id'),
-            'suplier_id' => $request->input('suplier_id'),
+            'name' => $request->input('name')
         ];
 
         $message = [
             'required' => 'Kolom :attribute wajib diisi.',
             'unique' => 'Kolom :attribute sudah terdaftar.',
-            'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
+            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -228,7 +186,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Produk Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Status Transaksi Gagal -> ' . $validator->errors(),
                 'data' => null,
             ];
 
@@ -236,24 +194,19 @@ class ProductController extends Controller
         }
 
         try {
-            if (!is_null($request->file('picture'))) {
-                $this->destroyFile($product->picture);
-                $input['picture'] = $this->uploadFile('storage/product', $request->file('picture'));
-            }
-
-            $product->update($input);
+            $transactionStatus->update($input);
 
             $response = [
                 'status' => 'success',
-                'message' => 'Mengubah Data Produk Sukses',
-                'data' => $product,
+                'message' => 'Mengubah Data Status Transaksi Sukses',
+                'data' => $transactionStatus,
             ];
 
             return response()->json($response, Response::HTTP_OK);
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Produk Gagal -> Server Error',
+                'message' => 'Mengubah Data Status Transaksi Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -269,14 +222,12 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        $product = Product::withTrashed()
-            ->where('id', '=', $id)
-            ->get();
+        $transactionStatus = TransactionStatus::find($id);
 
-        if (count($product) != 1) {
+        if (is_null($transactionStatus)) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menghapus Data Produk Gagal -> Data Tidak Ditemukan',
+                'message' => 'Menghapus Data Status Transaksi Gagal -> Data Tidak Ditemukan',
                 'data' => null,
             ];
 
@@ -284,50 +235,23 @@ class ProductController extends Controller
         }
 
         try {
-            $product->delete();
+            $transactionStatus->delete();
 
             $response = [
                 'status' => 'success',
-                'message' => 'Menghapus Data Produk Sukses',
-                'data' => $product,
+                'message' => 'Menghapus Data Status Transaksi Sukses',
+                'data' => $transactionStatus,
             ];
 
             return response()->json($response, Response::HTTP_OK);
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menghapus Data Produk Gagal -> Server Error',
+                'message' => 'Menghapus Data Status Transaksi Gagal -> Server Error',
                 'data' => null,
             ];
 
             return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    }
-
-    /**
-     * Upload file user.
-     *
-     * @param $folder, $file
-     * @return $fileName
-     */
-    function uploadFile($folder, $file)
-    {
-        $fileName = $folder . '/' . $file->getClientOriginalName();
-        $file->move($folder, $fileName);
-
-        return $fileName;
-    }
-
-    /**
-     * Destroy file user.
-     *
-     * @param $fileName
-     * @return true
-     */
-    function destroyFile($fileName)
-    {
-        File::delete($fileName);
-
-        return true;
     }
 }

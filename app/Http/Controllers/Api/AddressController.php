@@ -69,7 +69,7 @@ class AddressController extends Controller
                 ->where('addresses.id', '=', $id)
                 ->get(['customers.name', 'cities.name', 'addresses.*']);
 
-            if (count($address) > 0) {
+            if (count($address) != 1) {
                 $response = [
                     'status' => 'success',
                     'message' => 'Mencari Data Alamat Sukses',

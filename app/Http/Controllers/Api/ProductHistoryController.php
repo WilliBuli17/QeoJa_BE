@@ -73,7 +73,7 @@ class ProductHistoryController extends Controller
                 ->where('product_histories.id', '=', $id)
                 ->get(['create.name as created_by_name', 'update.name as updated_by_name', 'delete.name as deleted_by_name', 'product_histories.*']);
 
-            if (count($productHistory) > 0) {
+            if (count($productHistory) != 1) {
                 $response = [
                     'status' => 'success',
                     'message' => 'Mencari Data Riwayat Produk Sukses',

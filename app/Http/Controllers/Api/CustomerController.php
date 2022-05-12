@@ -380,7 +380,7 @@ class CustomerController extends Controller
      * Destroy file user.
      *
      * @param $fileName
-     * @return $fileName
+     * @return true
      */
     function destroyFile($fileName)
     {
