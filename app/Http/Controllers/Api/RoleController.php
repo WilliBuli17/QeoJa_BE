@@ -22,7 +22,10 @@ class RoleController extends Controller
     public function index()
     {
         try {
-            $role = Role::where('name', '!=', 'Super Admin')->get();
+            $role = Role::where('name', '!=', 'Super Admin')
+                ->orderBy('roles.id')
+                ->get(['roles.id', 'roles.name']);
+
 
             if (count($role) > 0) {
                 $response = [
@@ -100,7 +103,7 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'name' => 'required|max:60|unique:roles'
+            'name' => 'required|max:100|unique:roles'
         ];
 
         $input = [
@@ -108,9 +111,9 @@ class RoleController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter'
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -118,7 +121,7 @@ class RoleController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Role Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Role Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -168,7 +171,7 @@ class RoleController extends Controller
         }
 
         $rule = [
-            'name' => ['required', 'max:60', Rule::unique('roles', 'name')->ignore($id)]
+            'name' => ['required', 'max:100', Rule::unique('roles', 'name')->ignore($id)]
         ];
 
         $input = [
@@ -176,9 +179,9 @@ class RoleController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter'
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -186,7 +189,7 @@ class RoleController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Role Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Role Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 

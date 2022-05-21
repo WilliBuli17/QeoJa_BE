@@ -27,7 +27,8 @@ class EmployeeController extends Controller
             $employee = Employee::join('roles', 'employees.role_id', '=', 'roles.id')
                 ->join('users', 'employees.user_id', '=', 'users.id')
                 ->withTrashed()
-                ->get(['roles.name', 'users.*', 'employees.*']);
+                ->orderBy('employees.deleted_at', 'DESC')
+                ->get(['roles.name AS role', 'users.*', 'employees.*']);
 
             if (count($employee) > 0) {
                 $response = [
@@ -109,10 +110,8 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'reference' => 'required|in:employee,customer',
             'email' => 'required|email:rfc,dns|unique:users',
-            'password' => 'required|min:8',
-            'name' => 'required|max:60',
+            'name' => 'required|max:100',
             'gander' => 'required|in:man,woman',
             'phone' => ['required', 'regex:/\(?(?:\+62|62|0)(?:\d{2,3})?\)?[ .-]?\d{2,4}[ .-]?\d{2,4}[ .-]?\d{2,4}/i'],
             'address' => 'required',
@@ -121,9 +120,7 @@ class EmployeeController extends Controller
         ];
 
         $input = [
-            'reference' => $request->input('reference'),
             'email' => $request->input('email'),
-            'password' => $request->input('password'),
             'name' => $request->input('name'),
             'gander' => $request->input('gander'),
             'phone' => $request->input('phone'),
@@ -133,15 +130,14 @@ class EmployeeController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'in' => 'Kolom :attribute tidak valid.',
-            'email' => 'Kolom :attribute tidak sesuai format.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'min' => 'Kolom :attribute hanya dapat memuat minimal :min karakter.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter.',
-            'regex' => 'Kolom :attribute tidak valid.',
-            'date' => 'Kolom :attribute hanya dapat memuat data berupa tanggal.',
-            'date_format' => 'Kolom :attribute tidak sesuai format penanggalan sistem.',
+            'required' => ':attribute wajib diisi.',
+            'in' => ':attribute tidak valid.',
+            'email' => ':attribute tidak sesuai format.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter.',
+            'regex' => ':attribute tidak valid.',
+            'date' => ':attribute hanya dapat memuat data berupa tanggal.',
+            'date_format' => ':attribute tidak sesuai format penanggalan sistem.',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -149,7 +145,7 @@ class EmployeeController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Pegawai Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Pegawai Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -158,12 +154,13 @@ class EmployeeController extends Controller
 
         try {
             $inputUser = [
-                'reference' => $input['reference'],
+                'reference' => 'employee',
                 'email' => $input['email'],
-                'password' => bcrypt($input['password']),
+                'password' => bcrypt('12345678'),
             ];
 
             $user = User::create($inputUser);
+            $user->markEmailAsVerified();
 
             $inputEmployee = [
                 'name' => $input['name'],
@@ -171,7 +168,7 @@ class EmployeeController extends Controller
                 'phone' => $input['phone'],
                 'address' => $input['address'],
                 'date_join' => $input['date_join'],
-                'picture' => 'no_image.png',
+                'picture' => 'storage/no-image.jpg',
                 'role_id' => $input['role_id'],
                 'user_id' => $user->id,
             ];
@@ -209,11 +206,9 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $employee = Employee::withTrashed()
-            ->where('id', '=', $id)
-            ->get();
+        $employee = Employee::withTrashed()->find($id);
 
-        if (count($employee) != 1) {
+        if (is_null($employee)) {
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengubah Data Pegawai Gagal -> Data Tidak Ditemukan',
@@ -223,11 +218,9 @@ class EmployeeController extends Controller
             return response()->json($response, Response::HTTP_NOT_FOUND);
         }
 
-        $user = User::withTrashed()
-            ->where('id', '=', $employee->user_id)
-            ->get();
+        $user = User::withTrashed()->find($employee->user_id);
 
-        if (count($user) != 1) {
+        if (is_null($user)) {
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengubah Data Pegawai Gagal -> Data Tidak Ditemukan',
@@ -238,10 +231,9 @@ class EmployeeController extends Controller
         }
 
         $rule = [
-            'reference' => 'required|in:employee,customer',
             'email' => ['required', 'email:rfc,dns', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => 'nullable|min:8',
-            'name' => 'required|max:60',
+            'password' => 'nullable',
+            'name' => 'required|max:100',
             'gander' => 'required|in:man,woman',
             'phone' => ['required', 'regex:/\(?(?:\+62|62|0)(?:\d{2,3})?\)?[ .-]?\d{2,4}[ .-]?\d{2,4}[ .-]?\d{2,4}/i'],
             'address' => 'required',
@@ -250,7 +242,6 @@ class EmployeeController extends Controller
         ];
 
         $input = [
-            'reference' => $request->input('reference'),
             'email' => $request->input('email'),
             'password' => $request->input('password'),
             'name' => $request->input('name'),
@@ -262,15 +253,14 @@ class EmployeeController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'in' => 'Kolom :attribute tidak valid.',
-            'email' => 'Kolom :attribute tidak sesuai format.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'min' => 'Kolom :attribute hanya dapat memuat minimal :min karakter.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter.',
-            'regex' => 'Kolom :attribute tidak valid.',
-            'date' => 'Kolom :attribute hanya dapat memuat data berupa tanggal.',
-            'date_format' => 'Kolom :attribute tidak sesuai format penanggalan sistem.',
+            'required' => ':attribute wajib diisi.',
+            'in' => ':attribute tidak valid.',
+            'email' => ':attribute tidak sesuai format.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter.',
+            'regex' => ':attribute tidak valid.',
+            'date' => ':attribute hanya dapat memuat data berupa tanggal.',
+            'date_format' => ':attribute tidak sesuai format penanggalan sistem.',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -278,7 +268,7 @@ class EmployeeController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Pegawai Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Pegawai Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -287,7 +277,7 @@ class EmployeeController extends Controller
 
         try {
             $inputUser = [
-                'reference' => $input['reference'],
+                'reference' => 'employee',
                 'email' => $input['email'],
                 'password' => $user->password,
             ];
@@ -342,28 +332,24 @@ class EmployeeController extends Controller
      */
     public function destroy($id)
     {
-        $employee = Employee::withTrashed()
-            ->where('id', '=', $id)
-            ->get();
+        $employee = Employee::withTrashed()->find($id);
 
-        if (count($employee) != 1) {
+        if (is_null($employee)) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Pegawai Gagal -> Data Tidak Ditemukan',
+                'message' => 'Menghapus/Mengembalikan Data Pegawai Gagal -> Data Tidak Ditemukan',
                 'data' => null,
             ];
 
             return response()->json($response, Response::HTTP_NOT_FOUND);
         }
 
-        $user = User::withTrashed()
-            ->where('id', '=', $employee->user_id)
-            ->get();
+        $user = User::withTrashed()->find($employee->user_id);
 
-        if (count($user) != 1) {
+        if (is_null($user)) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Pegawai Gagal -> Data Tidak Ditemukan',
+                'message' => 'Menghapus/Mengembalikan Data Pegawai Gagal -> Data Tidak Ditemukan',
                 'data' => null,
             ];
 
@@ -371,12 +357,17 @@ class EmployeeController extends Controller
         }
 
         try {
-            $employee->delete();
-            $user->delete();
+            if (is_null($user->deleted_at) && is_null($employee->deleted_at)) {
+                $employee->delete();
+                $user->delete();
+            } else {
+                $employee->restore();
+                $user->restore();
+            }
 
             $response = [
                 'status' => 'success',
-                'message' => 'Menghapus Data Pegawai Sukses',
+                'message' => 'Menghapus/Mengembalikan Data Pegawai Sukses',
                 'data' => $employee,
             ];
 
@@ -384,7 +375,7 @@ class EmployeeController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menghapus Data Pegawai Gagal -> Server Error',
+                'message' => 'Menghapus/Mengembalikan Data Pegawai Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -414,7 +405,9 @@ class EmployeeController extends Controller
      */
     function destroyFile($fileName)
     {
-        File::delete($fileName);
+        if ($fileName !== 'storage/no-image.jpg') {
+            File::delete($fileName);
+        }
 
         return true;
     }

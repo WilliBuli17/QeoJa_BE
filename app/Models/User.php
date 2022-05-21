@@ -10,7 +10,7 @@ use Laravel\Passport\HasApiTokens; // Replace Sanctum Wirh Passport
 use Carbon\Carbon; // Add new library
 use Illuminate\Database\Eloquent\SoftDeletes; // Add new library
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
