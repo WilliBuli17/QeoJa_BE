@@ -26,7 +26,8 @@ class ProductController extends Controller
             $product = Product::join('categories', 'products.category_id', '=', 'categories.id')
                 ->join('supliers', 'products.suplier_id', '=', 'supliers.id')
                 ->withTrashed()
-                ->get(['categories.name', 'supliers.*', 'products.*']);
+                ->orderBy('products.deleted_at', 'DESC')
+                ->get(['categories.name AS category', 'supliers.name AS suplier', 'products.*']);
 
             if (count($product) > 0) {
                 $response = [
@@ -69,7 +70,7 @@ class ProductController extends Controller
                 ->join('supliers', 'products.suplier_id', '=', 'supliers.id')
                 ->withTrashed()
                 ->where('products.id', '=', $id)
-                ->get(['categories.name', 'supliers.*', 'products.*']);
+                ->get(['categories.name AS category', 'supliers.name AS suplier', 'products.*']);
 
             if (count($product) != 1) {
                 $response = [
@@ -123,7 +124,7 @@ class ProductController extends Controller
             'unit' => $request->input('unit'),
             'volume' => $request->input('volume'),
             'price' => $request->input('price'),
-            'picture' => 'no_image.png',
+            'picture' => 'storage/no-image.jpg',
             'stock_quantity' => 0,
             'category_id' => $request->input('category_id'),
             'suplier_id' => $request->input('suplier_id'),
@@ -181,11 +182,9 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $product = Product::withTrashed()
-            ->where('id', '=', $id)
-            ->get();
+        $product = Product::withTrashed()->find($id);
 
-        if (count($product) != 1) {
+        if (is_null($product)) {
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengubah Data Produk Gagal -> Data Tidak Ditemukan',
@@ -228,7 +227,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Produk Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Produk Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -269,11 +268,9 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        $product = Product::withTrashed()
-            ->where('id', '=', $id)
-            ->get();
+        $product = Product::withTrashed()->find($id);
 
-        if (count($product) != 1) {
+        if (is_null($product)) {
             $response = [
                 'status' => 'fails',
                 'message' => 'Menghapus Data Produk Gagal -> Data Tidak Ditemukan',
@@ -284,7 +281,11 @@ class ProductController extends Controller
         }
 
         try {
-            $product->delete();
+            if (is_null($product->deleted_at)) {
+                $product->delete();
+            } else {
+                $product->restore();
+            }
 
             $response = [
                 'status' => 'success',
@@ -326,7 +327,9 @@ class ProductController extends Controller
      */
     function destroyFile($fileName)
     {
-        File::delete($fileName);
+        if ($fileName !== 'storage/no-image.jpg') {
+            File::delete($fileName);
+        }
 
         return true;
     }

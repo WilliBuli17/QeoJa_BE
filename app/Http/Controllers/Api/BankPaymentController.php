@@ -100,9 +100,9 @@ class BankPaymentController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'bank_name' => 'required|max:60|unique:bank_payments',
-            'account_name' => 'required|max:60',
-            'account_number' => 'required|max:60|unique:bank_payments'
+            'bank_name' => 'required|max:100|unique:bank_payments',
+            'account_name' => 'required|max:100',
+            'account_number' => 'required|max:100|unique:bank_payments'
         ];
 
         $input = [
@@ -112,9 +112,9 @@ class BankPaymentController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter'
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -122,7 +122,7 @@ class BankPaymentController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Bank Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Bank Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -172,9 +172,9 @@ class BankPaymentController extends Controller
         }
 
         $rule = [
-            'bank_name' => ['required', 'max:60', Rule::unique('bank_payments', 'bank_name')->ignore($id)],
-            'account_name' => 'required|max:60',
-            'account_number' => ['required', 'max:60', Rule::unique('bank_payments', 'account_number')->ignore($id)]
+            'bank_name' => ['required', 'max:100', Rule::unique('bank_payments', 'bank_name')->ignore($id)],
+            'account_name' => 'required|max:100',
+            'account_number' => ['required', 'max:100', Rule::unique('bank_payments', 'account_number')->ignore($id)]
         ];
 
         $input = [
@@ -184,9 +184,9 @@ class BankPaymentController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter'
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -194,7 +194,7 @@ class BankPaymentController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Bank Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Bank Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 

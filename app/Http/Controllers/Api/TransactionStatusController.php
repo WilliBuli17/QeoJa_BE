@@ -100,7 +100,7 @@ class TransactionStatusController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'name' => 'required|max:60|unique:transaction_statuses'
+            'name' => 'required|max:100|unique:transaction_statuses'
         ];
 
         $input = [
@@ -108,9 +108,9 @@ class TransactionStatusController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter'
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -118,7 +118,7 @@ class TransactionStatusController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Status Transaksi Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Status Transaksi Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -168,7 +168,7 @@ class TransactionStatusController extends Controller
         }
 
         $rule = [
-            'name' => ['required', 'max:60', Rule::unique('transaction_statuses', 'name')->ignore($id)]
+            'name' => ['required', 'max:100', Rule::unique('transaction_statuses', 'name')->ignore($id)]
         ];
 
         $input = [
@@ -176,9 +176,9 @@ class TransactionStatusController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter'
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter'
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -186,7 +186,7 @@ class TransactionStatusController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Status Transaksi Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Status Transaksi Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 

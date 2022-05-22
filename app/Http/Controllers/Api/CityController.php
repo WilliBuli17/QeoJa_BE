@@ -100,7 +100,7 @@ class CityController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'name' => 'required|max:60|unique:cities',
+            'name' => 'required|max:100|unique:cities',
             'expedition_cost' => 'required|numeric|digits_between:6,7'
         ];
 
@@ -110,11 +110,11 @@ class CityController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter',
-            'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
-            'digits_between' => 'Kolom :attribute hanya dapat memuat antara 6-7 digit',
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter',
+            'numeric' => ':attribute hanya dapat memuat data berupa angka',
+            'digits_between' => ':attribute hanya dapat memuat antara 6-7 digit',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -122,7 +122,7 @@ class CityController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Kota Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Kota Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -172,8 +172,8 @@ class CityController extends Controller
         }
 
         $rule = [
-            'name' => ['required', 'max:60', Rule::unique('cities', 'name')->ignore($id)],
-            'expedition_cost' => 'required|numeric|digits_between:6,7'
+            'name' => ['required', 'max:100', Rule::unique('cities', 'name')->ignore($id)],
+            'expedition_cost' => 'required|numeric|digits_between:5,7'
         ];
 
         $input = [
@@ -182,11 +182,11 @@ class CityController extends Controller
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'max' => 'Kolom :attribute hanya dapat memuat maksimal :max karakter',
-            'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
-            'digits_between' => 'Kolom :attribute hanya dapat memuat antara 6-7 digit',
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'max' => ':attribute hanya dapat memuat maksimal :max karakter',
+            'numeric' => ':attribute hanya dapat memuat data berupa angka',
+            'digits_between' => ':attribute hanya dapat memuat antara 5-7 digit',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -194,7 +194,7 @@ class CityController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Kota Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Kota Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 

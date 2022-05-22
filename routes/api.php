@@ -51,7 +51,8 @@ Route::resource('/category', CategoryController::class)->except(['create', 'edit
 
 Route::resource('/supplier', SuplierController::class)->except(['create', 'edit']);
 
-Route::resource('/product', ProductController::class)->except(['create', 'edit']);
+Route::resource('/product', ProductController::class)->except(['create', 'edit', 'update']);
+Route::post('/product/{id}', [ProductController::class, 'update']);
 
 Route::resource('/productHistory', ProductHistoryController::class)->except(['create', 'edit']);
 

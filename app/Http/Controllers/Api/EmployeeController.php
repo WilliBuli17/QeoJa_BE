@@ -71,7 +71,7 @@ class EmployeeController extends Controller
                 ->join('users', 'employees.user_id', '=', 'users.id')
                 ->withTrashed()
                 ->where('employees.id', '=', $id)
-                ->get(['roles.name', 'users.*', 'employees.*']);
+                ->get(['roles.name AS role', 'users.*', 'employees.*']);
 
             if (count($employee) == 1) {
                 $response = [
