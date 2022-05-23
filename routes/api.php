@@ -67,7 +67,8 @@ Route::resource('/transaction', TransactionController::class)->except(['create',
 
 Route::resource('/detailTransaction', DetailTransactionController::class)->except(['create', 'edit']);
 
-Route::resource('/expeditionTruck', ExpeditionTruckController::class)->except(['create', 'edit']);
+Route::resource('/expeditionTruck', ExpeditionTruckController::class)->except(['create', 'edit', 'update']);
+Route::post('/expeditionTruck/{id}', [ExpeditionTruckController::class, 'update']);
 
 Route::resource('/transactionShipping', TransactionShippingController::class)->except(['create', 'edit']);
 // });

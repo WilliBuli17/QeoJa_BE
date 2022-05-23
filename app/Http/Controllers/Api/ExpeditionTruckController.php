@@ -104,22 +104,20 @@ class ExpeditionTruckController extends Controller
             'license_id' => 'required|unique:expedition_trucks',
             'min_volume' => 'required|numeric',
             'max_volume' => 'required|numeric',
-            'status' => 'required|in:available,not available',
         ];
 
         $input = [
             'license_id' => $request->input('license_id'),
             'min_volume' => $request->input('min_volume'),
             'max_volume' => $request->input('max_volume'),
-            'picture' => 'no_image.png',
-            'status' => $request->input('status')
+            'picture' => 'storage/no-image.jpg',
+            'status' => 'available'
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
-            'in' => 'Kolom :attribute tidak valid.'
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'numeric' => ':attribute hanya dapat memuat data berupa angka',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -127,7 +125,7 @@ class ExpeditionTruckController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Truk Ekspedisi Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Truk Ekspedisi Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -184,7 +182,6 @@ class ExpeditionTruckController extends Controller
             'license_id' => ['required', Rule::unique('expedition_trucks', 'license_id')->ignore($id)],
             'min_volume' => 'required|numeric',
             'max_volume' => 'required|numeric',
-            'status' => 'required|in:available,not available',
         ];
 
         $input = [
@@ -192,14 +189,13 @@ class ExpeditionTruckController extends Controller
             'min_volume' => $request->input('min_volume'),
             'max_volume' => $request->input('max_volume'),
             'picture' => $expeditionTruck->picture,
-            'status' => $request->input('status')
+            'status' => $expeditionTruck->status
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-            'unique' => 'Kolom :attribute sudah terdaftar.',
-            'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
-            'in' => 'Kolom :attribute tidak valid.'
+            'required' => ':attribute wajib diisi.',
+            'unique' => ':attribute sudah terdaftar.',
+            'numeric' => ':attribute hanya dapat memuat data berupa angka',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -207,7 +203,7 @@ class ExpeditionTruckController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Truk Ekspedisi Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Truk Ekspedisi Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -304,7 +300,9 @@ class ExpeditionTruckController extends Controller
      */
     function destroyFile($fileName)
     {
-        File::delete($fileName);
+        if ($fileName !== 'storage/no-image.jpg') {
+            File::delete($fileName);
+        }
 
         return true;
     }
