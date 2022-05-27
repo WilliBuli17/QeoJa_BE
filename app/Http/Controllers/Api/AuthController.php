@@ -66,7 +66,7 @@ class AuthController extends Controller
             $response = [
                 'status' => 'success',
                 'message' => 'Autentikasi Sukses',
-                'data' => $user,
+                'data' => $user->id,
                 'token_type' => 'Bearer',
                 'access_token' => $token
             ];

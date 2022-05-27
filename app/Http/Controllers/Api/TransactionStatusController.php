@@ -24,6 +24,8 @@ class TransactionStatusController extends Controller
         try {
             $transactionStatus = TransactionStatus::all();
 
+            $transactionStatus->makeHidden(['created_at', 'updated_at']);
+
             if (count($transactionStatus) > 0) {
                 $response = [
                     'status' => 'success',
@@ -62,6 +64,8 @@ class TransactionStatusController extends Controller
     {
         try {
             $transactionStatus = TransactionStatus::find($id);
+
+            $transactionStatus->makeHidden(['created_at', 'updated_at']);
 
             if (!is_null($transactionStatus)) {
                 $response = [

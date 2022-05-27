@@ -30,7 +30,7 @@ use App\Http\Controllers\Api\TransactionShippingController;
 |
 */
 
-// Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);
 
 // Route::middleware('auth:api')->group(function () {
 //     Route::post('/logout', [AuthController::class, 'logout']);
@@ -40,7 +40,8 @@ Route::resource('/role', RoleController::class)->except(['create', 'edit']);
 Route::resource('/employee', EmployeeController::class)->except(['create', 'edit', 'update']);
 Route::post('/employee/{id}', [EmployeeController::class, 'update']);
 
-Route::resource('/customer', CustomerController::class)->except(['create', 'edit']);
+Route::resource('/customer', CustomerController::class)->except(['create', 'edit', 'update']);
+Route::post('/customer/{id}', [CustomerController::class, 'update']);
 
 Route::resource('/city', CityController::class)->except(['create', 'edit']);
 

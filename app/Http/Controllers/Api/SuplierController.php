@@ -24,6 +24,8 @@ class SuplierController extends Controller
         try {
             $suplier = Suplier::all();
 
+            $suplier->makeHidden(['created_at', 'updated_at']);
+
             if (count($suplier) > 0) {
                 $response = [
                     'status' => 'success',
@@ -62,6 +64,8 @@ class SuplierController extends Controller
     {
         try {
             $suplier = Suplier::find($id);
+
+            $suplier->makeHidden(['created_at', 'updated_at']);
 
             if (!is_null($suplier)) {
                 $response = [

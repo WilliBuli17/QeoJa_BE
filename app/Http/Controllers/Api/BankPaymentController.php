@@ -24,6 +24,8 @@ class BankPaymentController extends Controller
         try {
             $bankPayment = BankPayment::all();
 
+            $bankPayment->makeHidden(['created_at', 'updated_at']);
+
             if (count($bankPayment) > 0) {
                 $response = [
                     'status' => 'success',
@@ -62,6 +64,8 @@ class BankPaymentController extends Controller
     {
         try {
             $bankPayment = BankPayment::find($id);
+
+            $bankPayment->makeHidden(['created_at', 'updated_at']);
 
             if (!is_null($bankPayment)) {
                 $response = [

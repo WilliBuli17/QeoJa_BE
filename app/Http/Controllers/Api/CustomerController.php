@@ -26,6 +26,7 @@ class CustomerController extends Controller
         try {
             $customer = Customer::join('users', 'customers.user_id', '=', 'users.id')
                 ->withTrashed()
+                ->orderBy('customers.deleted_at', 'DESC')
                 ->get(['users.*', 'customers.*']);
 
             if (count($customer) > 0) {
@@ -67,8 +68,19 @@ class CustomerController extends Controller
         try {
             $customer = Customer::join('users', 'customers.user_id', '=', 'users.id')
                 ->withTrashed()
-                ->where('customers.id', '=', $id)
+                ->where('customers.user_id', '=', $id)
                 ->get(['users.*', 'customers.*']);
+
+            $customer->makeHidden([
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'email_verified_at',
+                'reference',
+                'remember_token',
+                'user_id',
+                'password',
+            ]);
 
             if (count($customer) == 1) {
                 $response = [
@@ -107,15 +119,13 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'reference' => 'required|in:employee,customer',
             'email' => 'required|email:rfc,dns|unique:users',
             'password' => 'required|min:8',
-            'name' => 'required|max:60',
+            'name' => 'required|max:100',
             'phone' => ['required', 'regex:/\(?(?:\+62|62|0)(?:\d{2,3})?\)?[ .-]?\d{2,4}[ .-]?\d{2,4}[ .-]?\d{2,4}/i'],
         ];
 
         $input = [
-            'reference' => $request->input('reference'),
             'email' => $request->input('email'),
             'password' => $request->input('password'),
             'name' => $request->input('name'),
@@ -124,7 +134,6 @@ class CustomerController extends Controller
 
         $message = [
             'required' => 'Kolom :attribute wajib diisi.',
-            'in' => 'Kolom :attribute tidak valid.',
             'email' => 'Kolom :attribute tidak sesuai format.',
             'unique' => 'Kolom :attribute sudah terdaftar.',
             'min' => 'Kolom :attribute hanya dapat memuat minimal :min karakter.',
@@ -137,7 +146,7 @@ class CustomerController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Pelanggan Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Pelanggan Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -146,17 +155,18 @@ class CustomerController extends Controller
 
         try {
             $inputUser = [
-                'reference' => $input['reference'],
+                'reference' => 'customer',
                 'email' => $input['email'],
                 'password' => bcrypt($input['password']),
             ];
 
             $user = User::create($inputUser);
+            $user->markEmailAsVerified();
 
             $inputCustomer = [
                 'name' => $input['name'],
                 'phone' => $input['phone'],
-                'picture' => 'no_image.png',
+                'picture' => 'storage/no-image.jpg',
                 'user_id' => $user->id,
             ];
 
@@ -193,11 +203,9 @@ class CustomerController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $customer = Customer::withTrashed()
-            ->where('id', '=', $id)
-            ->get();
+        $customer = Customer::withTrashed()->find($id);
 
-        if (count($customer) != 1) {
+        if (is_null($customer)) {
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengubah Data Pelanggan Gagal -> Data Tidak Ditemukan',
@@ -207,11 +215,9 @@ class CustomerController extends Controller
             return response()->json($response, Response::HTTP_NOT_FOUND);
         }
 
-        $user = User::withTrashed()
-            ->where('id', '=', $customer->user_id)
-            ->get();
+        $user = User::withTrashed()->find($customer->user_id);
 
-        if (count($user) != 1) {
+        if (is_null($user)) {
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengubah Data Pelanggan Gagal -> Data Tidak Ditemukan',
@@ -222,15 +228,13 @@ class CustomerController extends Controller
         }
 
         $rule = [
-            'reference' => 'required|in:employee,customer',
             'email' => ['required', 'email:rfc,dns', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => 'nullable|min:8',
-            'name' => 'required|max:60',
+            'name' => 'required|max:100',
             'phone' => ['required', 'regex:/\(?(?:\+62|62|0)(?:\d{2,3})?\)?[ .-]?\d{2,4}[ .-]?\d{2,4}[ .-]?\d{2,4}/i'],
         ];
 
         $input = [
-            'reference' => $request->input('reference'),
             'email' => $request->input('email'),
             'password' => $request->input('password'),
             'name' => $request->input('name'),
@@ -239,7 +243,6 @@ class CustomerController extends Controller
 
         $message = [
             'required' => 'Kolom :attribute wajib diisi.',
-            'in' => 'Kolom :attribute tidak valid.',
             'email' => 'Kolom :attribute tidak sesuai format.',
             'unique' => 'Kolom :attribute sudah terdaftar.',
             'min' => 'Kolom :attribute hanya dapat memuat minimal :min karakter.',
@@ -252,7 +255,7 @@ class CustomerController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Pelanggan Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Pelanggan Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -261,7 +264,7 @@ class CustomerController extends Controller
 
         try {
             $inputUser = [
-                'reference' => $input['reference'],
+                'reference' => 'customer',
                 'email' => $input['email'],
                 'password' => $user->password,
             ];
@@ -312,11 +315,9 @@ class CustomerController extends Controller
      */
     public function destroy($id)
     {
-        $customer = Customer::withTrashed()
-            ->where('id', '=', $id)
-            ->get();
+        $customer = Customer::withTrashed()->find($id);
 
-        if (count($customer) != 1) {
+        if (is_null($customer)) {
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengubah Data Pelanggan Gagal -> Data Tidak Ditemukan',
@@ -326,11 +327,9 @@ class CustomerController extends Controller
             return response()->json($response, Response::HTTP_NOT_FOUND);
         }
 
-        $user = User::withTrashed()
-            ->where('id', '=', $customer->user_id)
-            ->get();
+        $user = User::withTrashed()->find($customer->user_id);
 
-        if (count($user) != 1) {
+        if (is_null($user)) {
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengubah Data Pelanggan Gagal -> Data Tidak Ditemukan',
@@ -341,8 +340,13 @@ class CustomerController extends Controller
         }
 
         try {
-            $customer->delete();
-            $user->delete();
+            if (is_null($user->deleted_at) && is_null($customer->deleted_at)) {
+                $customer->delete();
+                $user->delete();
+            } else {
+                $customer->restore();
+                $user->restore();
+            }
 
             $response = [
                 'status' => 'success',
@@ -384,7 +388,9 @@ class CustomerController extends Controller
      */
     function destroyFile($fileName)
     {
-        File::delete($fileName);
+        if ($fileName !== 'storage/no-image.jpg') {
+            File::delete($fileName);
+        }
 
         return true;
     }

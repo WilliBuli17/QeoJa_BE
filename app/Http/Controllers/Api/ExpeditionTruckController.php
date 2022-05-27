@@ -25,6 +25,8 @@ class ExpeditionTruckController extends Controller
         try {
             $expeditionTruck = ExpeditionTruck::all();
 
+            $expeditionTruck->makeHidden(['created_at', 'updated_at']);
+
             if (count($expeditionTruck) > 0) {
                 $response = [
                     'status' => 'success',
@@ -63,6 +65,8 @@ class ExpeditionTruckController extends Controller
     {
         try {
             $expeditionTruck = ExpeditionTruck::find($id);
+
+            $expeditionTruck->makeHidden(['created_at', 'updated_at']);
 
             if (!is_null($expeditionTruck)) {
                 $response = [

@@ -24,6 +24,8 @@ class CityController extends Controller
         try {
             $city = City::all();
 
+            $city->makeHidden(['created_at', 'updated_at']);
+
             if (count($city) > 0) {
                 $response = [
                     'status' => 'success',
@@ -62,6 +64,8 @@ class CityController extends Controller
     {
         try {
             $city = City::find($id);
+
+            $city->makeHidden(['created_at', 'updated_at']);
 
             if (!is_null($city)) {
                 $response = [

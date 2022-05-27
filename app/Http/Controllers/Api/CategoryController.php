@@ -24,6 +24,8 @@ class CategoryController extends Controller
         try {
             $category = Category::all();
 
+            $category->makeHidden(['created_at', 'updated_at']);
+
             if (count($category) > 0) {
                 $response = [
                     'status' => 'success',
@@ -62,6 +64,8 @@ class CategoryController extends Controller
     {
         try {
             $category = Category::find($id);
+
+            $category->makeHidden(['created_at', 'updated_at']);
 
             if (!is_null($category)) {
                 $response = [

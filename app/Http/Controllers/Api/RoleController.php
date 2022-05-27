@@ -26,6 +26,7 @@ class RoleController extends Controller
                 ->orderBy('roles.id')
                 ->get(['roles.id', 'roles.name']);
 
+            $role->makeHidden(['created_at', 'updated_at']);
 
             if (count($role) > 0) {
                 $response = [
@@ -65,6 +66,8 @@ class RoleController extends Controller
     {
         try {
             $role = Role::find($id);
+
+            $role->makeHidden(['created_at', 'updated_at']);
 
             if (!is_null($role)) {
                 $response = [
