@@ -22,11 +22,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $rules = [
+            'reference' => 'required',
             'email' => 'required|email:rfc,dns',
-            'password' => 'required'
+            'password' => 'required',
         ];
 
         $input = [
+            'reference' => $request->input('reference'),
             'email' => $request->input('email'),
             'password' => $request->input('password')
         ];
@@ -52,7 +54,7 @@ class AuthController extends Controller
             if (!Auth::attempt($input)) {
                 $response = [
                     'status' => 'fails',
-                    'message' => 'Pengguna Tidak Dikenal Karena Email atau Password Salah.',
+                    'message' => 'Akun Tidak Terdeteksi Oleh Sistem',
                     'data' => null,
                 ];
 
@@ -61,21 +63,32 @@ class AuthController extends Controller
 
             /** @var \App\Models\User $user **/
             $user = Auth::user();
-            $token = $user->createToken('Authentication Token')->accessToken;
 
-            $response = [
-                'status' => 'success',
-                'message' => 'Autentikasi Sukses',
-                'data' => $user->id,
-                'token_type' => 'Bearer',
-                'access_token' => $token
-            ];
+            if(is_null($user->deleted_at)){
+                $token = $user->createToken('Authentication Token')->accessToken;
 
-            return response()->json($response, Response::HTTP_OK);  //Return Response Sukses
+                $response = [
+                    'status' => 'success',
+                    'message' => 'Autentikasi Sukses',
+                    'data' => $user->id,
+                    'token_type' => 'Bearer',
+                    'access_token' => $token
+                ];
+
+                return response()->json($response, Response::HTTP_OK);  //Return Response Sukses
+            } else {
+                $response = [
+                    'status' => 'fails',
+                    'message' => 'Akun Ditangguhkan -> Hubungi Admin Terkait Untuk Mengaktifkan Kembali',
+                    'data' => null,
+                ];
+
+                return response()->json($response, Response::HTTP_FORBIDDEN);
+            }
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Autentikasi Gagal ',
+                'message' => 'Autentikasi Gagal',
                 'data' => null,
             ];
             return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR); //Return Response Gagal

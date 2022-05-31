@@ -15,10 +15,10 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->integer('subtotal_price');
-            $table->integer('shipping_cost');
-            $table->integer('tax');
-            $table->integer('grand_total_price');
+            $table->unsignedBigInteger('subtotal_price');
+            $table->unsignedBigInteger('shipping_cost');
+            $table->unsignedBigInteger('tax');
+            $table->unsignedBigInteger('grand_total_price');
             $table->text('receipt_of_payment');
             $table->foreignId('customer_id')
                 ->nullable()

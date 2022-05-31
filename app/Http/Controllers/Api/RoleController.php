@@ -57,47 +57,6 @@ class RoleController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $role = Role::find($id);
-
-            $role->makeHidden(['created_at', 'updated_at']);
-
-            if (!is_null($role)) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Role Sukses',
-                    'data' => $role,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Role Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Role Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request

@@ -21,10 +21,12 @@ class CartController extends Controller
     public function index($id)
     {
         try {
-            $cart = Cart::join('customers', 'carts.customer_id', '=', 'customers.id')
-                ->join('products', 'carts.product_id', '=', 'products.id')
-                ->where('customers.id', '=', $id)
-                ->get(['customers.*', 'products.*', 'carts.*']);
+            $cart = Cart::join('products', 'carts.product_id', '=', 'products.id')
+                ->where('carts.customer_id', '=', $id)
+                ->orderBy('carts.product_id')
+                ->get(['products.name AS name', 'products.price AS price', 'products.picture AS picture', 'carts.*']);
+
+            $cart->makeHidden(['created_at', 'updated_at']);
 
             if (count($cart) > 0) {
                 $response = [
@@ -105,15 +107,12 @@ class CartController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'amount_of_product' => 'required|numeric',
-            'total_price' => 'required|numeric',
             'customer_id' => 'required',
             'product_id' => 'required',
         ];
 
         $input = [
             'amount_of_product' => $request->input('amount_of_product'),
-            'total_price' => $request->input('total_price'),
             'customer_id' => $request->input('customer_id'),
             'product_id' => $request->input('product_id')
         ];
@@ -128,7 +127,7 @@ class CartController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Cart Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Cart Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -136,7 +135,16 @@ class CartController extends Controller
         }
 
         try {
-            $cart = Cart::create($input);
+            $cart = Cart::where('customer_id', '=', $input['customer_id'])
+                ->where('product_id', '=', $input['product_id'])
+                ->first();
+
+            if (is_null($cart)) {
+                $cart = Cart::create($input);
+            } else {
+                $input['amount_of_product'] = $cart->amount_of_product + $input['amount_of_product'];
+                $cart->update($input);
+            }
 
             $response = [
                 'status' => 'success',
@@ -148,7 +156,7 @@ class CartController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Cart Gagal -> Server Error',
+                'message' => 'Menambah Data Cart Gagal -> Server Error ' . $e,
                 'data' => null,
             ];
 
@@ -179,14 +187,12 @@ class CartController extends Controller
 
         $rule = [
             'amount_of_product' => 'required|numeric',
-            'total_price' => 'required|numeric',
             'customer_id' => 'required',
             'product_id' => 'required',
         ];
 
         $input = [
             'amount_of_product' => $request->input('amount_of_product'),
-            'total_price' => $request->input('total_price'),
             'customer_id' => $request->input('customer_id'),
             'product_id' => $request->input('product_id')
         ];
@@ -201,7 +207,7 @@ class CartController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Cart Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Cart Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 

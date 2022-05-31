@@ -19,9 +19,9 @@ return new class extends Migration
             $table->text('description');
             $table->string('unit');
             $table->double('volume');
-            $table->integer('price');
+            $table->unsignedBigInteger('price');
             $table->text('picture');
-            $table->integer('stock_quantity');
+            $table->unsignedBigInteger('stock_quantity');
             $table->foreignId('category_id')
                 ->nullable()
                 ->constrained('categories')

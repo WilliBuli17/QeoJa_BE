@@ -22,9 +22,8 @@ class CityController extends Controller
     public function index()
     {
         try {
-            $city = City::all();
-
-            $city->makeHidden(['created_at', 'updated_at']);
+            $city = City::orderBy('cities.id')
+                ->get(['cities.id', 'cities.name', 'cities.expedition_cost']);
 
             if (count($city) > 0) {
                 $response = [
@@ -47,47 +46,6 @@ class CityController extends Controller
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengambil Data Kota Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $city = City::find($id);
-
-            $city->makeHidden(['created_at', 'updated_at']);
-
-            if (!is_null($city)) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Kota Sukses',
-                    'data' => $city,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Kota Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Kota Gagal -> Server Error',
                 'data' => null,
             ];
 

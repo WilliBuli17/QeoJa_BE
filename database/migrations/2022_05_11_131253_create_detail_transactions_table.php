@@ -15,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('detail_transactions', function (Blueprint $table) {
             $table->id();
-            $table->integer('amount_of_product');
-            $table->integer('product_price');
-            $table->integer('total_price');
+            $table->unsignedBigInteger('amount_of_product');
+            $table->unsignedBigInteger('product_price');
+            $table->unsignedBigInteger('total_price');
             $table->enum('status', ['success', 'pending', 'fail']);
             $table->foreignId('transaction_id')
                 ->nullable()

@@ -28,7 +28,19 @@ class EmployeeController extends Controller
                 ->join('users', 'employees.user_id', '=', 'users.id')
                 ->withTrashed()
                 ->orderBy('employees.deleted_at', 'DESC')
-                ->get(['roles.name AS role', 'users.*', 'employees.*']);
+                ->get([
+                    'roles.name AS role',
+                    'users.email',
+                    'employees.id',
+                    'employees.name',
+                    'employees.gander',
+                    'employees.phone',
+                    'employees.address',
+                    'employees.date_join',
+                    'employees.role_id',
+                    'employees.picture',
+                    'employees.deleted_at'
+                ]);
 
             if (count($employee) > 0) {
                 $response = [
@@ -69,9 +81,20 @@ class EmployeeController extends Controller
         try {
             $employee = Employee::join('roles', 'employees.role_id', '=', 'roles.id')
                 ->join('users', 'employees.user_id', '=', 'users.id')
-                ->withTrashed()
-                ->where('employees.id', '=', $id)
-                ->get(['roles.name AS role', 'users.*', 'employees.*']);
+                ->where('employees.user_id', '=', $id)
+                ->get([
+                    'roles.name AS role',
+                    'users.email',
+                    'employees.id',
+                    'employees.name',
+                    'employees.gander',
+                    'employees.phone',
+                    'employees.address',
+                    'employees.date_join',
+                    'employees.role_id',
+                    'employees.picture',
+                    'employees.deleted_at'
+                ]);
 
             if (count($employee) == 1) {
                 $response = [
@@ -168,7 +191,7 @@ class EmployeeController extends Controller
                 'phone' => $input['phone'],
                 'address' => $input['address'],
                 'date_join' => $input['date_join'],
-                'picture' => 'storage/no-image.jpg',
+                'picture' => 'no-image.jpg',
                 'role_id' => $input['role_id'],
                 'user_id' => $user->id,
             ];
@@ -405,7 +428,7 @@ class EmployeeController extends Controller
      */
     function destroyFile($fileName)
     {
-        if ($fileName !== 'storage/no-image.jpg') {
+        if ($fileName !== 'no-image.jpg') {
             File::delete($fileName);
         }
 

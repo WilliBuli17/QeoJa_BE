@@ -22,9 +22,8 @@ class SuplierController extends Controller
     public function index()
     {
         try {
-            $suplier = Suplier::all();
-
-            $suplier->makeHidden(['created_at', 'updated_at']);
+            $suplier = Suplier::orderBy('supliers.id')
+                ->get(['supliers.id', 'supliers.name']);
 
             if (count($suplier) > 0) {
                 $response = [
@@ -47,47 +46,6 @@ class SuplierController extends Controller
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengambil Data Suplier Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $suplier = Suplier::find($id);
-
-            $suplier->makeHidden(['created_at', 'updated_at']);
-
-            if (!is_null($suplier)) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Suplier Sukses',
-                    'data' => $suplier,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Suplier Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Suplier Gagal -> Server Error',
                 'data' => null,
             ];
 

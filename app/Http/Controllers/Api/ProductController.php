@@ -27,7 +27,22 @@ class ProductController extends Controller
                 ->join('supliers', 'products.suplier_id', '=', 'supliers.id')
                 ->withTrashed()
                 ->orderBy('products.deleted_at', 'DESC')
-                ->get(['categories.name AS category', 'supliers.name AS suplier', 'products.*']);
+                ->orderBy('products.stock_quantity', 'ASC')
+                ->get([
+                    'categories.name AS category',
+                    'supliers.name AS suplier',
+                    'products.id',
+                    'products.name',
+                    'products.description',
+                    'products.unit',
+                    'products.volume',
+                    'products.price',
+                    'products.stock_quantity',
+                    'products.category_id',
+                    'products.suplier_id',
+                    'products.picture',
+                    'products.deleted_at'
+                ]);
 
             if (count($product) > 0) {
                 $response = [
@@ -68,11 +83,25 @@ class ProductController extends Controller
         try {
             $product = Product::join('categories', 'products.category_id', '=', 'categories.id')
                 ->join('supliers', 'products.suplier_id', '=', 'supliers.id')
-                ->withTrashed()
-                ->where('products.id', '=', $id)
-                ->get(['categories.name AS category', 'supliers.name AS suplier', 'products.*']);
+                ->orderBy('products.deleted_at', 'DESC')
+                ->orderBy('products.stock_quantity', 'ASC')
+                ->get([
+                    'categories.name AS category',
+                    'supliers.name AS suplier',
+                    'products.id',
+                    'products.name',
+                    'products.description',
+                    'products.unit',
+                    'products.volume',
+                    'products.price',
+                    'products.stock_quantity',
+                    'products.category_id',
+                    'products.suplier_id',
+                    'products.picture',
+                    'products.deleted_at'
+                ]);
 
-            if (count($product) != 1) {
+            if (count($product) > 0) {
                 $response = [
                     'status' => 'success',
                     'message' => 'Mencari Data Produk Sukses',
@@ -124,7 +153,7 @@ class ProductController extends Controller
             'unit' => $request->input('unit'),
             'volume' => $request->input('volume'),
             'price' => $request->input('price'),
-            'picture' => 'storage/no-image.jpg',
+            'picture' => 'no-image.jpg',
             'stock_quantity' => 0,
             'category_id' => $request->input('category_id'),
             'suplier_id' => $request->input('suplier_id'),
@@ -327,7 +356,7 @@ class ProductController extends Controller
      */
     function destroyFile($fileName)
     {
-        if ($fileName !== 'storage/no-image.jpg') {
+        if ($fileName !== 'no-image.jpg') {
             File::delete($fileName);
         }
 

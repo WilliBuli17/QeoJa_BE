@@ -27,7 +27,15 @@ class CustomerController extends Controller
             $customer = Customer::join('users', 'customers.user_id', '=', 'users.id')
                 ->withTrashed()
                 ->orderBy('customers.deleted_at', 'DESC')
-                ->get(['users.*', 'customers.*']);
+                ->get([
+                    'users.email',
+                    'users.email_verified_at',
+                    'customers.id',
+                    'customers.name',
+                    'customers.phone',
+                    'customers.picture',
+                    'customers.deleted_at'
+                ]);
 
             if (count($customer) > 0) {
                 $response = [
@@ -67,20 +75,16 @@ class CustomerController extends Controller
     {
         try {
             $customer = Customer::join('users', 'customers.user_id', '=', 'users.id')
-                ->withTrashed()
                 ->where('customers.user_id', '=', $id)
-                ->get(['users.*', 'customers.*']);
-
-            $customer->makeHidden([
-                'created_at',
-                'updated_at',
-                'deleted_at',
-                'email_verified_at',
-                'reference',
-                'remember_token',
-                'user_id',
-                'password',
-            ]);
+                ->get([
+                    'users.email',
+                    'users.email_verified_at',
+                    'customers.id',
+                    'customers.name',
+                    'customers.phone',
+                    'customers.picture',
+                    'customers.deleted_at'
+                ]);
 
             if (count($customer) == 1) {
                 $response = [
@@ -166,7 +170,7 @@ class CustomerController extends Controller
             $inputCustomer = [
                 'name' => $input['name'],
                 'phone' => $input['phone'],
-                'picture' => 'storage/no-image.jpg',
+                'picture' => 'no-image.jpg',
                 'user_id' => $user->id,
             ];
 
@@ -388,7 +392,7 @@ class CustomerController extends Controller
      */
     function destroyFile($fileName)
     {
-        if ($fileName !== 'storage/no-image.jpg') {
+        if ($fileName !== 'no-image.jpg') {
             File::delete($fileName);
         }
 

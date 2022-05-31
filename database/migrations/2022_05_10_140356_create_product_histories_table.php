@@ -17,9 +17,9 @@ return new class extends Migration
             $table->id();
             $table->enum('history_category', ['in', 'out']);
             $table->date('history_date');
-            $table->integer('amount_of_product');
-            $table->integer('product_price');
-            $table->integer('total_price');
+            $table->unsignedBigInteger('amount_of_product');
+            $table->unsignedBigInteger('product_price');
+            $table->unsignedBigInteger('total_price');
             $table->date('product_expired_date');
             $table->foreignId('product_id')
                 ->nullable()

@@ -22,7 +22,8 @@ class TransactionStatusController extends Controller
     public function index()
     {
         try {
-            $transactionStatus = TransactionStatus::all();
+            $transactionStatus = TransactionStatus::orderBy('transaction_statuses.id')
+                ->get(['transaction_statuses.id', 'transaction_statuses.name']);
 
             $transactionStatus->makeHidden(['created_at', 'updated_at']);
 
@@ -47,47 +48,6 @@ class TransactionStatusController extends Controller
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengambil Data Status Transaksi Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $transactionStatus = TransactionStatus::find($id);
-
-            $transactionStatus->makeHidden(['created_at', 'updated_at']);
-
-            if (!is_null($transactionStatus)) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Status Transaksi Sukses',
-                    'data' => $transactionStatus,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Status Transaksi Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Status Transaksi Gagal -> Server Error',
                 'data' => null,
             ];
 

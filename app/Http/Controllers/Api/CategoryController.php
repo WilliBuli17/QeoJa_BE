@@ -22,9 +22,8 @@ class CategoryController extends Controller
     public function index()
     {
         try {
-            $category = Category::all();
-
-            $category->makeHidden(['created_at', 'updated_at']);
+            $category = Category::orderBy('categories.id')
+                ->get(['categories.id', 'categories.name']);
 
             if (count($category) > 0) {
                 $response = [
@@ -55,47 +54,6 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $category = Category::find($id);
-
-            $category->makeHidden(['created_at', 'updated_at']);
-
-            if (!is_null($category)) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Kategori Sukses',
-                    'data' => $category,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Kategori Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Kategori Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -104,7 +62,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'name' => 'required|max:100|unique:supliers'
+            'name' => 'required|max:100|unique:categories'
         ];
 
         $input = [
@@ -172,7 +130,7 @@ class CategoryController extends Controller
         }
 
         $rule = [
-            'name' => ['required', 'max:100', Rule::unique('supliers', 'name')->ignore($id)]
+            'name' => ['required', 'max:100', Rule::unique('categories', 'name')->ignore($id)]
         ];
 
         $input = [

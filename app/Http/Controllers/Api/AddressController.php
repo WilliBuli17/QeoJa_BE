@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 // Add new library
-use Illuminate\Validation\Rule;
 use App\Models\Address;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Validator;
@@ -22,10 +21,12 @@ class AddressController extends Controller
     public function index($id)
     {
         try {
-            $address = Address::join('customers', 'addresses.customer_id', '=', 'customers.id')
-                ->join('cities', 'addresses.city_id', '=', 'cities.id')
-                ->where('customers.id', '=', $id)
-                ->get(['customers.name', 'cities.name', 'addresses.*']);
+            $address = Address::join('cities', 'addresses.city_id', '=', 'cities.id')
+                ->where('addresses.customer_id', '=', $id)
+                ->orderBy('addresses.created_at', 'ASC')
+                ->get(['cities.name as city', 'addresses.*']);
+
+            $address->makeHidden(['created_at', 'updated_at']);
 
             if (count($address) > 0) {
                 $response = [
@@ -126,7 +127,7 @@ class AddressController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Alamat Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Alamat Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -196,7 +197,7 @@ class AddressController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Alamat Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Alamat Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 

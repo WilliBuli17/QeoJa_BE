@@ -16,8 +16,7 @@ class Cart extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'amount_of_product', 'total_price',
-        'customer_id', 'product_id'
+        'amount_of_product', 'customer_id', 'product_id'
     ];
 
     // New functions for Carbon

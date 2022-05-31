@@ -23,9 +23,15 @@ class ExpeditionTruckController extends Controller
     public function index()
     {
         try {
-            $expeditionTruck = ExpeditionTruck::all();
-
-            $expeditionTruck->makeHidden(['created_at', 'updated_at']);
+            $expeditionTruck = ExpeditionTruck::orderBy('expedition_trucks.id')
+                ->get([
+                    'expedition_trucks.id',
+                    'expedition_trucks.license_id',
+                    'expedition_trucks.min_volume',
+                    'expedition_trucks.max_volume',
+                    'expedition_trucks.status',
+                    'expedition_trucks.picture'
+                ]);
 
             if (count($expeditionTruck) > 0) {
                 $response = [
@@ -56,47 +62,6 @@ class ExpeditionTruckController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $expeditionTruck = ExpeditionTruck::find($id);
-
-            $expeditionTruck->makeHidden(['created_at', 'updated_at']);
-
-            if (!is_null($expeditionTruck)) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Truk Ekspedisi Sukses',
-                    'data' => $expeditionTruck,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Truk Ekspedisi Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Truk Ekspedisi Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -114,7 +79,7 @@ class ExpeditionTruckController extends Controller
             'license_id' => $request->input('license_id'),
             'min_volume' => $request->input('min_volume'),
             'max_volume' => $request->input('max_volume'),
-            'picture' => 'storage/no-image.jpg',
+            'picture' => 'no-image.jpg',
             'status' => 'available'
         ];
 
@@ -304,7 +269,7 @@ class ExpeditionTruckController extends Controller
      */
     function destroyFile($fileName)
     {
-        if ($fileName !== 'storage/no-image.jpg') {
+        if ($fileName !== 'no-image.jpg') {
             File::delete($fileName);
         }
 
