@@ -17,15 +17,24 @@ class DetailTransactionController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function index($id)
+    public function show($id)
     {
         try {
-            $detailTransaction = DetailTransaction::join('transactions', 'detail_transactions.transaction_id', '=', 'transactions.id')
-                ->join('products', 'detail_transactions.product_id', '=', 'products.id')
+            $detailTransaction = DetailTransaction::leftJoin('transactions', 'detail_transactions.transaction_id', '=', 'transactions.id')
+                ->leftJoin('products', 'detail_transactions.product_id', '=', 'products.id')
                 ->where('transactions.id', '=', $id)
-                ->get(['transactions.*', 'products.*', 'detail_transactions.*']);
+                ->orderBy('detail_transactions.id')
+                ->get([
+                    'products.name AS name',
+                    'products.picture AS picture',
+                    'detail_transactions.id',
+                    'detail_transactions.amount_of_product',
+                    'detail_transactions.status',
+                    'detail_transactions.total_price',
+                ]);
 
             if (count($detailTransaction) > 0) {
                 $response = [
@@ -56,126 +65,6 @@ class DetailTransactionController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $detailTransaction = DetailTransaction::join('transactions', 'detail_transactions.transaction_id', '=', 'transactions.id')
-                ->join('products', 'detail_transactions.product_id', '=', 'products.id')
-                ->where('detail_transactions.id', '=', $id)
-                ->get(['transactions.*', 'products.*', 'detail_transactions.*']);
-
-            if (count($detailTransaction) != 1) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Detail Transaksi Sukses',
-                    'data' => $detailTransaction,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Detail Transaksi Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Detail Transaksi Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $rule = [
-            'customer_id' => 'required',
-            'transaction_id' => 'required'
-        ];
-
-        $input = [
-            'customer_id' => $request->input('customer_id'),
-            'transaction_id' => $request->input('transaction_id')
-        ];
-
-        $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
-        ];
-
-        $validator = Validator::make($input, $rule, $message);
-
-        if ($validator->fails()) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Menambah Data Detail Transaksi Gagal -> ' . $validator->errors(),
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_BAD_REQUEST);
-        }
-
-        $cart = Cart::join('products', 'carts.product_id', '=', 'products.id')
-            ->where('carts.customer_id', '=', $request->input('customer_id'))
-            ->get(['products.*', 'carts.*']);
-
-        if (count($cart) <= 0) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mengubah Data Detail Transaksi Gagal -> Data Tidak Ditemukan',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        }
-
-        try {
-            for ($i = 0; $i < count($cart); $i++) {
-                DetailTransaction::create([
-                    'amount_of_product' => $cart[$i]->amount_of_product,
-                    'product_price' => $cart[$i]->price,
-                    'total_price' => $cart[$i]->total_price,
-                    'status' => 'pending',
-                    'transaction_id' => $request->input('transaction_id'),
-                    'product_id' => $cart[$i]->product_id
-                ]);
-            }
-
-            $response = [
-                'status' => 'success',
-                'message' => 'Menambah Data Detail Transaksi Sukses',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_CREATED);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Menambah Data Detail Transaksi Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -197,25 +86,18 @@ class DetailTransactionController extends Controller
         }
 
         $rule = [
-            'amount_of_product' => 'required|numeric',
-            'product_price' => 'required|numeric',
-            'total_price' => 'required|numeric',
-            'status' => 'required|in:success,pending,fail',
-            'transaction_id' => 'required',
-            'product_id' => 'required',
+            'amount_of_product' => 'nullable|numeric',
+            'total_price' => 'nullable|numeric',
+            'status' => 'nullable|in:success,pending,fail',
         ];
 
         $input = [
             'amount_of_product' => $request->input('amount_of_product'),
-            'product_price' => $request->input('product_price'),
             'total_price' => $request->input('total_price'),
             'status' => $request->input('status'),
-            'transaction_id' => $request->input('transaction_id'),
-            'product_id' => $request->input('product_id')
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
             'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
             'in' => 'Kolom :attribute tidak valid.'
         ];
@@ -225,7 +107,7 @@ class DetailTransactionController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Detail Transaksi Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Detail Transaksi Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -233,6 +115,18 @@ class DetailTransactionController extends Controller
         }
 
         try {
+            if (is_null($request->input('amount_of_product'))){
+                $input['amount_of_product'] = $detailTransaction->amount_of_product;
+            }
+
+            if (is_null($request->input('total_price'))){
+                $input['total_price'] = $detailTransaction->total_price;
+            }
+
+            if (is_null($request->input('status'))){
+                $input['status'] = $detailTransaction->status;
+            }
+
             $detailTransaction->update($input);
 
             $response = [

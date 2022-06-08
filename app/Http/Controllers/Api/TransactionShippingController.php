@@ -22,10 +22,24 @@ class TransactionShippingController extends Controller
     public function index()
     {
         try {
-            $transactionShipping = TransactionShipping::join('transactions', 'transaction_shippings.transaction_id', '=', 'transactions.id')
-                ->join('employees', 'transaction_shippings.employee_id', '=', 'employees.id')
-                ->join('expedition_trucks', 'transaction_shippings.expedition_truck_id', '=', 'expedition_trucks.id')
-                ->get(['transactions.*', 'employees.*', 'expedition_trucks.*']);
+            $transactionShipping = TransactionShipping::leftJoin('transactions', 'transaction_shippings.transaction_id', '=', 'transactions.id')
+                ->leftJoin('employees', 'transaction_shippings.employee_id', '=', 'employees.id')
+                ->leftJoin('expedition_trucks', 'transaction_shippings.expedition_truck_id', '=', 'expedition_trucks.id')
+                ->leftJoin('customers', 'transactions.customer_id', '=', 'customers.id')
+                ->leftJoin('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
+                ->leftJoin('addresses', 'transactions.address_id', '=', 'addresses.id')
+                ->leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
+                ->get([
+                    'transaction_shippings.*',
+                    'customers.name AS customer',
+                    'cities.name AS city',
+                    'addresses.address',
+                    'transaction_statuses.name AS transaction_status_name',
+                    'transactions.transaction_status_id AS transaction_status',
+                    'transactions.total_volume_product',
+                    'employees.name AS employee',
+                    'expedition_trucks.license_id',
+                ]);
 
             if (count($transactionShipping) > 0) {
                 $response = [
@@ -64,9 +78,9 @@ class TransactionShippingController extends Controller
     public function show($id)
     {
         try {
-            $transactionShipping = TransactionShipping::join('transactions', 'transaction_shippings.transaction_id', '=', 'transactions.id')
-                ->join('employees', 'transaction_shippings.employee_id', '=', 'employees.id')
-                ->join('expedition_trucks', 'transaction_shippings.expedition_truck_id', '=', 'expedition_trucks.id')
+            $transactionShipping = TransactionShipping::leftJoin('transactions', 'transaction_shippings.transaction_id', '=', 'transactions.id')
+                ->leftJoin('employees', 'transaction_shippings.employee_id', '=', 'employees.id')
+                ->leftJoin('expedition_trucks', 'transaction_shippings.expedition_truck_id', '=', 'expedition_trucks.id')
                 ->where('transaction_shippings.id', '=', $id)
                 ->get(['transactions.*', 'employees.*', 'expedition_trucks.*']);
 
@@ -109,17 +123,21 @@ class TransactionShippingController extends Controller
         $rule = [
             'transaction_id' => 'required',
             'employee_id' => 'required',
-            'expedition_truck_id' => 'required'
+            'expedition_truck_id' => 'required',
+            'delivery_date' => 'required|date|date_format:Y-m-d',
         ];
 
         $input = [
             'transaction_id' => $request->input('transaction_id'),
             'employee_id' => $request->input('employee_id'),
-            'expedition_truck_id' => $request->input('expedition_truck_id')
+            'expedition_truck_id' => $request->input('expedition_truck_id'),
+            'delivery_date' => $request->input('delivery_date'),
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.'
+            'required' => 'Kolom :attribute wajib diisi.',
+            'date' => ':attribute hanya dapat memuat data berupa tanggal.',
+            'date_format' => ':attribute tidak sesuai format penanggalan sistem.',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -177,19 +195,17 @@ class TransactionShippingController extends Controller
         }
 
         $rule = [
-            'transaction_id' => 'required',
-            'employee_id' => 'required',
-            'expedition_truck_id' => 'required'
+            'arrived_date' => 'required|date|date_format:Y-m-d',
         ];
 
         $input = [
-            'transaction_id' => $request->input('transaction_id'),
-            'employee_id' => $request->input('employee_id'),
-            'expedition_truck_id' => $request->input('expedition_truck_id')
+            'arrived_date' => $request->input('arrived_date'),
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.'
+            'required' => 'Kolom :attribute wajib diisi.',
+            'date' => ':attribute hanya dapat memuat data berupa tanggal.',
+            'date_format' => ':attribute tidak sesuai format penanggalan sistem.',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -197,7 +213,7 @@ class TransactionShippingController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Pengiriman Transaksi Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Pengiriman Transaksi Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 

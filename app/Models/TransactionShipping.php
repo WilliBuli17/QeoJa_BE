@@ -18,7 +18,9 @@ class TransactionShipping extends Model
     protected $fillable = [
         'transaction_id',
         'employee_id',
-        'expedition_truck_id'
+        'expedition_truck_id',
+        'delivery_date',
+        'arrived_date'
     ];
 
     // New functions for Carbon

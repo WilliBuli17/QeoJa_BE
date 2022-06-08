@@ -151,6 +151,7 @@ class ExpeditionTruckController extends Controller
             'license_id' => ['required', Rule::unique('expedition_trucks', 'license_id')->ignore($id)],
             'min_volume' => 'required|numeric',
             'max_volume' => 'required|numeric',
+            'status' => 'required|in:available,not available',
         ];
 
         $input = [
@@ -158,7 +159,7 @@ class ExpeditionTruckController extends Controller
             'min_volume' => $request->input('min_volume'),
             'max_volume' => $request->input('max_volume'),
             'picture' => $expeditionTruck->picture,
-            'status' => $expeditionTruck->status
+            'status' => $request->input('status')
         ];
 
         $message = [

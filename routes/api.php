@@ -32,45 +32,51 @@ use App\Http\Controllers\Api\TransactionShippingController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
-// Route::middleware('auth:api')->group(function () {
-//     Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/supplierCustomer', [SuplierController::class, 'index']);
+Route::get('/categoryCustomer', [CategoryController::class, 'index']);
+Route::get('/productCustomer', [ProductController::class, 'show']);
 
-Route::resource('/role', RoleController::class)->except(['create', 'edit', 'show']);
+Route::middleware('auth:api')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
 
-Route::resource('/employee', EmployeeController::class)->except(['create', 'edit', 'update']);
-Route::post('/employee/{id}', [EmployeeController::class, 'update']);
+    Route::resource('/role', RoleController::class)->except(['create', 'edit', 'show']);
 
-Route::resource('/customer', CustomerController::class)->except(['create', 'edit', 'update']);
-Route::post('/customer/{id}', [CustomerController::class, 'update']);
+    Route::resource('/employee', EmployeeController::class)->except(['create', 'edit', 'update']);
+    Route::post('/employee/{id}', [EmployeeController::class, 'update']);
 
-Route::resource('/city', CityController::class)->except(['create', 'edit']);
+    Route::resource('/customer', CustomerController::class)->except(['create', 'edit', 'update']);
+    Route::post('/customer/{id}', [CustomerController::class, 'update']);
 
-Route::resource('/address', AddressController::class)->except(['index', 'show', 'create', 'edit']);
-Route::get('/address/{id}', [AddressController::class, 'index']);
+    Route::resource('/city', CityController::class)->except(['create', 'edit', 'show']);
 
-Route::resource('/category', CategoryController::class)->except(['create', 'edit']);
+    Route::resource('/address', AddressController::class)->except(['index', 'show', 'create', 'edit']);
+    Route::get('/address/{id}', [AddressController::class, 'index']);
 
-Route::resource('/supplier', SuplierController::class)->except(['create', 'edit']);
+    Route::resource('/category', CategoryController::class)->except(['create', 'edit', 'show']);
 
-Route::resource('/product', ProductController::class)->except(['create', 'edit', 'update']);
-Route::post('/product/{id}', [ProductController::class, 'update']);
+    Route::resource('/supplier', SuplierController::class)->except(['create', 'edit', 'show']);
 
-Route::resource('/productHistory', ProductHistoryController::class)->except(['create', 'edit', 'destroy']);
-Route::put('/productHistoryDel/{id}', [ProductHistoryController::class, 'destroy']);
+    Route::resource('/product', ProductController::class)->except(['create', 'edit', 'update', 'show']);
+    Route::post('/product/{id}', [ProductController::class, 'update']);
 
-Route::resource('/cart', CartController::class)->except(['index', 'show', 'create', 'edit']);
-Route::get('/cart/{id}', [CartController::class, 'index']);
+    Route::resource('/productHistory', ProductHistoryController::class)->except(['create', 'edit', 'destroy', 'show']);
+    Route::put('/productHistoryDel/{id}', [ProductHistoryController::class, 'destroy']);
 
-Route::resource('/bankPayment', BankPaymentController::class)->except(['create', 'edit']);
+    Route::resource('/cart', CartController::class)->except(['index', 'show', 'create', 'edit', 'update']);
+    Route::get('/cart/{id}', [CartController::class, 'index']);
+    Route::delete('/cartReset/{id}', [CartController::class, 'destroyMultiple']);
 
-Route::resource('/transactionStatus', TransactionStatusController::class)->except(['create', 'edit']);
+    Route::resource('/bankPayment', BankPaymentController::class)->except(['create', 'edit']);
 
-Route::resource('/transaction', TransactionController::class)->except(['create', 'edit']);
+    Route::resource('/transactionStatus', TransactionStatusController::class)->except(['create', 'edit', 'show']);
 
-Route::resource('/detailTransaction', DetailTransactionController::class)->except(['create', 'edit']);
+    Route::resource('/transaction', TransactionController::class)->except(['create', 'edit', 'destroy', 'update']);
+    Route::post('/transaction/{id}', [TransactionController::class, 'update']);
 
-Route::resource('/expeditionTruck', ExpeditionTruckController::class)->except(['create', 'edit', 'update']);
-Route::post('/expeditionTruck/{id}', [ExpeditionTruckController::class, 'update']);
+    Route::resource('/detailTransaction', DetailTransactionController::class)->except(['create', 'edit', 'index', 'store']);
 
-Route::resource('/transactionShipping', TransactionShippingController::class)->except(['create', 'edit']);
-// });
+    Route::resource('/expeditionTruck', ExpeditionTruckController::class)->except(['create', 'edit', 'update', 'show']);
+    Route::post('/expeditionTruck/{id}', [ExpeditionTruckController::class, 'update']);
+
+    Route::resource('/transactionShipping', TransactionShippingController::class)->except(['create', 'edit']);
+});

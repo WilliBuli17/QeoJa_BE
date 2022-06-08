@@ -16,9 +16,11 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('subtotal_price');
-            $table->unsignedBigInteger('shipping_cost');
+            $table->unsignedDecimal('shipping_cost', 20, 2);
             $table->unsignedBigInteger('tax');
-            $table->unsignedBigInteger('grand_total_price');
+            $table->unsignedDecimal('grand_total_price', 20, 2);
+            $table->text('message')->nullable();
+            $table->double('total_volume_product');
             $table->text('receipt_of_payment');
             $table->foreignId('customer_id')
                 ->nullable()

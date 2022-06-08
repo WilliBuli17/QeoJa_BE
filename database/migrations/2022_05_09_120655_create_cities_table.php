@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('cities', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('expedition_cost');
+            $table->double('expedition_cost');
             $table->timestamps();
         });
     }

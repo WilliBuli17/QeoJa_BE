@@ -10,6 +10,7 @@ use App\Models\Transaction;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 class TransactionController extends Controller
@@ -22,11 +23,31 @@ class TransactionController extends Controller
     public function index()
     {
         try {
-            $transaction = Transaction::join('customers', 'transactions.customer_id', '=', 'customers.id')
-                ->join('addresses', 'transactions.address_id', '=', 'addresses.id')
-                ->join('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
-                ->join('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
-                ->get(['customers.*', 'addresses.*', 'bank_payments.*', 'transaction_statuses.*']);
+            $transaction = Transaction::leftJoin('customers', 'transactions.customer_id', '=', 'customers.id')
+                ->leftJoin('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
+                ->leftJoin('addresses', 'transactions.address_id', '=', 'addresses.id')
+                ->leftJoin('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
+                ->leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
+                ->get([
+                    'customers.name AS name',
+                    'cities.name AS city',
+                    'addresses.address',
+                    'transaction_statuses.name AS status',
+                    'transactions.id',
+                    'transactions.message',
+                    'transactions.subtotal_price',
+                    'transactions.tax',
+                    'transactions.shipping_cost',
+                    'transactions.grand_total_price',
+                    'transactions.transaction_status_id',
+                    'transactions.created_at',
+                    'transactions.total_volume_product',
+                    'transactions.receipt_of_payment',
+                    'transaction_shippings.delivery_date',
+                    'transaction_shippings.arrived_date',
+                    'bank_payments.bank_name',
+                    'bank_payments.account_name',
+                ]);
 
             if (count($transaction) > 0) {
                 $response = [
@@ -65,14 +86,34 @@ class TransactionController extends Controller
     public function show($id)
     {
         try {
-            $transaction = Transaction::join('customers', 'transactions.customer_id', '=', 'customers.id')
-                ->join('addresses', 'transactions.address_id', '=', 'addresses.id')
-                ->join('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
-                ->join('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
-                ->where('transactions.id', '=', $id)
-                ->get(['customers.*', 'addresses.*', 'bank_payments.*', 'transaction_statuses.*']);
+            $transaction = Transaction::leftJoin('customers', 'transactions.customer_id', '=', 'customers.id')
+                ->leftJoin('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
+                ->leftJoin('addresses', 'transactions.address_id', '=', 'addresses.id')
+                ->leftJoin('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
+                ->leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
+                ->leftJoin('transaction_shippings', 'transactions.id', '=', 'transaction_shippings.transaction_id')
+                ->where('transactions.customer_id', '=', $id)
+                ->get([
+                    'customers.name AS name',
+                    'cities.name AS city',
+                    'addresses.address',
+                    'transaction_statuses.name AS status',
+                    'transactions.id',
+                    'transactions.message',
+                    'transactions.receipt_of_payment',
+                    'transactions.subtotal_price',
+                    'transactions.tax',
+                    'transactions.shipping_cost',
+                    'transactions.grand_total_price',
+                    'transactions.bank_payment_id',
+                    'transactions.created_at',
+                    'transaction_shippings.delivery_date',
+                    'transaction_shippings.arrived_date',
+                    'bank_payments.bank_name',
+                    'bank_payments.account_name',
+                ]);
 
-            if (count($transaction) != 1) {
+            if (count($transaction) > 0) {
                 $response = [
                     'status' => 'success',
                     'message' => 'Mencari Data Transaksi Sukses',
@@ -92,7 +133,7 @@ class TransactionController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mencari Data Transaksi Gagal -> Server Error',
+                'message' => 'Mencari Data Transaksi Gagal -> Server Error ' . $e->getMessage(),
                 'data' => null,
             ];
 
@@ -113,6 +154,8 @@ class TransactionController extends Controller
             'shipping_cost' => 'required|numeric',
             'tax' => 'required|numeric',
             'grand_total_price' => 'required|numeric',
+            'message' => 'nullable',
+            'total_volume_product' => 'required|numeric',
             'customer_id' => 'required',
             'address_id' => 'required',
             'bank_payment_id' => 'required',
@@ -124,11 +167,13 @@ class TransactionController extends Controller
             'shipping_cost' => $request->input('shipping_cost'),
             'tax' => $request->input('tax'),
             'grand_total_price' => $request->input('grand_total_price'),
-            'receipt_of_payment' => 'no_image.png',
+            'message' => $request->input('message'),
+            'receipt_of_payment' => 'no-image.jpg',
+            'total_volume_product' => $request->input('total_volume_product'),
             'customer_id' => $request->input('customer_id'),
             'address_id' => $request->input('address_id'),
             'bank_payment_id' => $request->input('bank_payment_id'),
-            'transaction_status_id' => $request->input('transaction_status_id'),
+            'transaction_status_id' => 1,
         ];
 
         $message = [
@@ -141,7 +186,7 @@ class TransactionController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Transaksi Gagal -> ' . $validator->errors(),
+                'message' => 'Menambah Data Transaksi Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -149,11 +194,14 @@ class TransactionController extends Controller
         }
 
         try {
-            if (!is_null($request->file('receipt_of_payment'))) {
-                $input['receipt_of_payment'] = $this->uploadFile('storage/transaction', $request->file('receipt_of_payment'));
-            }
-
             $transaction = Transaction::create($input);
+
+            DB::unprepared('
+                INSERT INTO detail_transactions (amount_of_product, product_price, total_price, status, transaction_id, product_id, created_at, updated_at)
+                SELECT amount_of_product, products.price, (amount_of_product * products.price), \'pending\', ' . $transaction->id . ', product_id, \'' . $transaction->created_at . '\', \'' . $transaction->updated_at . '\'
+                FROM carts JOIN products ON (carts.product_id = products.id)
+                WHERE carts.customer_id = ' . $transaction->customer_id . '
+            ');
 
             $response = [
                 'status' => 'success',
@@ -165,7 +213,7 @@ class TransactionController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Transaksi Gagal -> Server Error',
+                'message' => 'Menambah Data Transaksi Gagal -> Server Error ' . $e->getMessage(),
                 'data' => null,
             ];
 
@@ -195,30 +243,15 @@ class TransactionController extends Controller
         }
 
         $rule = [
-            'subtotal_price' => 'required|numeric',
-            'shipping_cost' => 'required|numeric',
-            'tax' => 'required|numeric',
-            'grand_total_price' => 'required|numeric',
-            'customer_id' => 'required',
-            'address_id' => 'required',
-            'bank_payment_id' => 'required',
-            'transaction_status_id' => 'required'
+            'transaction_status_id' => 'nullable|numeric'
         ];
 
         $input = [
-            'subtotal_price' => $request->input('subtotal_price'),
-            'shipping_cost' => $request->input('shipping_cost'),
-            'tax' => $request->input('tax'),
-            'grand_total_price' => $request->input('grand_total_price'),
-            'receipt_of_payment' => $transaction->receipt_of_payment,
-            'customer_id' => $request->input('customer_id'),
-            'address_id' => $request->input('address_id'),
-            'bank_payment_id' => $request->input('bank_payment_id'),
             'transaction_status_id' => $request->input('transaction_status_id'),
+            'receipt_of_payment' => $transaction->receipt_of_payment,
         ];
 
         $message = [
-            'required' => 'Kolom :attribute wajib diisi.',
             'numeric' => 'Kolom :attribute hanya dapat memuat data berupa angka',
         ];
 
@@ -227,7 +260,7 @@ class TransactionController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Transaksi Gagal -> ' . $validator->errors(),
+                'message' => 'Mengubah Data Transaksi Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -238,6 +271,10 @@ class TransactionController extends Controller
             if (!is_null($request->file('receipt_of_payment'))) {
                 $this->destroyFile($transaction->receipt_of_payment);
                 $input['receipt_of_payment'] = $this->uploadFile('storage/transaction', $request->file('receipt_of_payment'));
+            }
+
+            if (is_null($request->input('transaction_status_id'))){
+                $input['transaction_status_id'] = $transaction->transaction_status_id;
             }
 
             $transaction->update($input);
@@ -252,49 +289,7 @@ class TransactionController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Transaksi Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $transaction = Transaction::find($id);
-
-        if (is_null($transaction)) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Menghapus Data Transaksi Gagal -> Data Tidak Ditemukan',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        }
-
-        try {
-            $this->destroyFile($transaction->receipt_of_payment);
-            $transaction->delete();
-
-            $response = [
-                'status' => 'success',
-                'message' => 'Menghapus Data Transaksi Sukses',
-                'data' => $transaction,
-            ];
-
-            return response()->json($response, Response::HTTP_OK);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Menghapus Data Transaksi Gagal -> Server Error',
+                'message' => 'Mengubah Data Transaksi Gagal -> Server Error ' . $e->getMessage(),
                 'data' => null,
             ];
 

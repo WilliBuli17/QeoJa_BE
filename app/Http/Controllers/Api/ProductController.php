@@ -23,8 +23,8 @@ class ProductController extends Controller
     public function index()
     {
         try {
-            $product = Product::join('categories', 'products.category_id', '=', 'categories.id')
-                ->join('supliers', 'products.suplier_id', '=', 'supliers.id')
+            $product = Product::leftJoin('categories', 'products.category_id', '=', 'categories.id')
+                ->leftJoin('supliers', 'products.suplier_id', '=', 'supliers.id')
                 ->withTrashed()
                 ->orderBy('products.deleted_at', 'DESC')
                 ->orderBy('products.stock_quantity', 'ASC')
@@ -75,14 +75,14 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show()
     {
         try {
-            $product = Product::join('categories', 'products.category_id', '=', 'categories.id')
-                ->join('supliers', 'products.suplier_id', '=', 'supliers.id')
+            $product = Product::leftJoin('categories', 'products.category_id', '=', 'categories.id')
+                ->leftJoin('supliers', 'products.suplier_id', '=', 'supliers.id')
+                ->where('products.stock_quantity', '>',  0)
                 ->orderBy('products.deleted_at', 'DESC')
                 ->orderBy('products.stock_quantity', 'ASC')
                 ->get([
@@ -121,7 +121,7 @@ class ProductController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mencari Data Produk Gagal -> Server Error',
+                'message' => 'Mencari Data Produk Gagal -> Server Error ' . $e,
                 'data' => null,
             ];
 

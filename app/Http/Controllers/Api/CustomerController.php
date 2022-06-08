@@ -24,7 +24,7 @@ class CustomerController extends Controller
     public function index()
     {
         try {
-            $customer = Customer::join('users', 'customers.user_id', '=', 'users.id')
+            $customer = Customer::leftJoin('users', 'customers.user_id', '=', 'users.id')
                 ->withTrashed()
                 ->orderBy('customers.deleted_at', 'DESC')
                 ->get([
@@ -74,7 +74,7 @@ class CustomerController extends Controller
     public function show($id)
     {
         try {
-            $customer = Customer::join('users', 'customers.user_id', '=', 'users.id')
+            $customer = Customer::leftJoin('users', 'customers.user_id', '=', 'users.id')
                 ->where('customers.user_id', '=', $id)
                 ->get([
                     'users.email',

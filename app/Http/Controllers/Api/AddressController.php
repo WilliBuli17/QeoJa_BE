@@ -21,12 +21,17 @@ class AddressController extends Controller
     public function index($id)
     {
         try {
-            $address = Address::join('cities', 'addresses.city_id', '=', 'cities.id')
+            $address = Address::leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
                 ->where('addresses.customer_id', '=', $id)
                 ->orderBy('addresses.created_at', 'ASC')
-                ->get(['cities.name as city', 'addresses.*']);
-
-            $address->makeHidden(['created_at', 'updated_at']);
+                ->get([
+                    'cities.name as city',
+                    'cities.expedition_cost',
+                    'addresses.id',
+                    'addresses.address',
+                    'addresses.customer_id',
+                    'addresses.city_id'
+                ]);
 
             if (count($address) > 0) {
                 $response = [
@@ -49,48 +54,6 @@ class AddressController extends Controller
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengambil Data Alamat Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $address = Address::join('customers', 'addresses.customer_id', '=', 'customers.id')
-                ->join('cities', 'addresses.city_id', '=', 'cities.id')
-                ->where('addresses.id', '=', $id)
-                ->get(['customers.name', 'cities.name', 'addresses.*']);
-
-            if (count($address) != 1) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Alamat Sukses',
-                    'data' => $address,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Alamat Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Alamat Gagal -> Server Error',
                 'data' => null,
             ];
 

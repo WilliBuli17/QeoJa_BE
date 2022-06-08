@@ -63,7 +63,7 @@ class CityController extends Controller
     {
         $rule = [
             'name' => 'required|max:100|unique:cities',
-            'expedition_cost' => 'required|numeric|digits_between:6,7'
+            'expedition_cost' => 'required|numeric'
         ];
 
         $input = [
@@ -76,7 +76,6 @@ class CityController extends Controller
             'unique' => ':attribute sudah terdaftar.',
             'max' => ':attribute hanya dapat memuat maksimal :max karakter',
             'numeric' => ':attribute hanya dapat memuat data berupa angka',
-            'digits_between' => ':attribute hanya dapat memuat antara 6-7 digit',
         ];
 
         $validator = Validator::make($input, $rule, $message);
@@ -135,7 +134,7 @@ class CityController extends Controller
 
         $rule = [
             'name' => ['required', 'max:100', Rule::unique('cities', 'name')->ignore($id)],
-            'expedition_cost' => 'required|numeric|digits_between:5,7'
+            'expedition_cost' => 'required|numeric'
         ];
 
         $input = [
@@ -148,7 +147,6 @@ class CityController extends Controller
             'unique' => ':attribute sudah terdaftar.',
             'max' => ':attribute hanya dapat memuat maksimal :max karakter',
             'numeric' => ':attribute hanya dapat memuat data berupa angka',
-            'digits_between' => ':attribute hanya dapat memuat antara 5-7 digit',
         ];
 
         $validator = Validator::make($input, $rule, $message);

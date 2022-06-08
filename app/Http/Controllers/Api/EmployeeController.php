@@ -24,8 +24,8 @@ class EmployeeController extends Controller
     public function index()
     {
         try {
-            $employee = Employee::join('roles', 'employees.role_id', '=', 'roles.id')
-                ->join('users', 'employees.user_id', '=', 'users.id')
+            $employee = Employee::leftJoin('roles', 'employees.role_id', '=', 'roles.id')
+                ->leftJoin('users', 'employees.user_id', '=', 'users.id')
                 ->withTrashed()
                 ->orderBy('employees.deleted_at', 'DESC')
                 ->get([
@@ -79,8 +79,8 @@ class EmployeeController extends Controller
     public function show($id)
     {
         try {
-            $employee = Employee::join('roles', 'employees.role_id', '=', 'roles.id')
-                ->join('users', 'employees.user_id', '=', 'users.id')
+            $employee = Employee::leftJoin('roles', 'employees.role_id', '=', 'roles.id')
+                ->leftJoin('users', 'employees.user_id', '=', 'users.id')
                 ->where('employees.user_id', '=', $id)
                 ->get([
                     'roles.name AS role',

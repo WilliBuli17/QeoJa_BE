@@ -21,10 +21,10 @@ class ProductHistoryController extends Controller
     public function index()
     {
         try {
-            $productHistory = ProductHistory::join('products', 'product_histories.product_id', '=', 'products.id')
-                ->leftjoin('employees as create', 'product_histories.created_by', '=', 'create.id')
-                ->leftjoin('employees as update', 'product_histories.updated_by', '=', 'update.id')
-                ->leftjoin('employees as delete', 'product_histories.deleted_by', '=', 'delete.id')
+            $productHistory = ProductHistory::leftJoin('products', 'product_histories.product_id', '=', 'products.id')
+                ->leftJoin('employees as create', 'product_histories.created_by', '=', 'create.id')
+                ->leftJoin('employees as update', 'product_histories.updated_by', '=', 'update.id')
+                ->leftJoin('employees as delete', 'product_histories.deleted_by', '=', 'delete.id')
                 ->withTrashed()
                 ->get([
                     'create.name as created_by_name',
@@ -36,6 +36,7 @@ class ProductHistoryController extends Controller
                     'product_histories.history_date',
                     'product_histories.amount_of_product',
                     'product_histories.product_price',
+                    'product_histories.total_price',
                     'product_histories.product_expired_date',
                     'product_histories.product_id',
                     'product_histories.created_by',

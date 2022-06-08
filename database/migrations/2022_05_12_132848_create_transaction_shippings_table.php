@@ -30,6 +30,8 @@ return new class extends Migration
                 ->constrained('expedition_trucks')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
+            $table->date('delivery_date');
+            $table->date('arrived_date')->nullable();
             $table->timestamps();
         });
     }
