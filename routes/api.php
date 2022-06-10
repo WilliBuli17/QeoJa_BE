@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\DetailTransactionController;
 use App\Http\Controllers\Api\ExpeditionTruckController;
 use App\Http\Controllers\Api\TransactionShippingController;
+use App\Http\Controllers\Api\LaporanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,7 +71,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::resource('/transactionStatus', TransactionStatusController::class)->except(['create', 'edit', 'show']);
 
-    Route::resource('/transaction', TransactionController::class)->except(['create', 'edit', 'destroy', 'update']);
+    Route::resource('/transaction', TransactionController::class)->except(['create', 'edit', 'destroy', 'update', 'show']);
     Route::post('/transaction/{id}', [TransactionController::class, 'update']);
 
     Route::resource('/detailTransaction', DetailTransactionController::class)->except(['create', 'edit', 'index', 'store']);
@@ -79,4 +80,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/expeditionTruck/{id}', [ExpeditionTruckController::class, 'update']);
 
     Route::resource('/transactionShipping', TransactionShippingController::class)->except(['create', 'edit']);
+
+    Route::get('/laporanStockBulanan/{id}/{year}', [LaporanController::class, 'laporanStockBulanan']);
+    Route::get('/laporanPendapatanBulanan/{year}', [LaporanController::class, 'laporanPendapatanBulanan']);
+    Route::get('/laporanPenjualanBulanan/{id}/{year}', [LaporanController::class, 'laporanPenjualanBulanan']);
+    Route::get('/laporanStockTahunan/{id}/{yearStart}/{yearEnd}', [LaporanController::class, 'laporanStockTahunan']);
+    Route::get('/laporanPendapatanTahunan/{yearStart}/{yearEnd}', [LaporanController::class, 'laporanPendapatanTahunan']);
+    Route::get('/laporanPenjualanTahunan/{id}/{yearStart}/{yearEnd}', [LaporanController::class, 'laporanPenjualanTahunan']);
 });

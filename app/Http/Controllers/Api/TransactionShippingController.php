@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 // Add new library
-use Illuminate\Validation\Rule;
 use App\Models\TransactionShipping;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Validator;
@@ -79,10 +78,33 @@ class TransactionShippingController extends Controller
     {
         try {
             $transactionShipping = TransactionShipping::leftJoin('transactions', 'transaction_shippings.transaction_id', '=', 'transactions.id')
-                ->leftJoin('employees', 'transaction_shippings.employee_id', '=', 'employees.id')
-                ->leftJoin('expedition_trucks', 'transaction_shippings.expedition_truck_id', '=', 'expedition_trucks.id')
-                ->where('transaction_shippings.id', '=', $id)
-                ->get(['transactions.*', 'employees.*', 'expedition_trucks.*']);
+                ->leftJoin('customers', 'transactions.customer_id', '=', 'customers.id')
+                ->leftJoin('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
+                ->leftJoin('addresses', 'transactions.address_id', '=', 'addresses.id')
+                ->leftJoin('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
+                ->leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
+                ->where('transactions.customer_id', '=', $id)
+                ->orderBy('transactions.transaction_status_id', 'ASC')
+                ->get([
+                    'customers.name AS name',
+                    'cities.name AS city',
+                    'addresses.address',
+                    'transaction_statuses.name AS status',
+                    'transactions.id',
+                    'transactions.message',
+                    'transactions.receipt_of_payment',
+                    'transactions.subtotal_price',
+                    'transactions.tax',
+                    'transactions.shipping_cost',
+                    'transactions.grand_total_price',
+                    'transactions.bank_payment_id',
+                    'transactions.created_at',
+                    'transaction_shippings.id as idKey',
+                    'transaction_shippings.delivery_date',
+                    'transaction_shippings.arrived_date',
+                    'bank_payments.bank_name',
+                    'bank_payments.account_name',
+                ]);
 
             if (!is_null($transactionShipping)) {
                 $response = [
@@ -195,10 +217,12 @@ class TransactionShippingController extends Controller
         }
 
         $rule = [
+            'delivery_date' => 'required|date|date_format:Y-m-d',
             'arrived_date' => 'required|date|date_format:Y-m-d',
         ];
 
         $input = [
+            'delivery_date' => $request->input('delivery_date'),
             'arrived_date' => $request->input('arrived_date'),
         ];
 

@@ -17,6 +17,12 @@ use App\Models\TransactionStatus;
 use App\Models\ExpeditionTruck;
 use App\Models\BankPayment;
 use App\Models\ProductHistory;
+use App\Models\Transaction;
+use App\Models\DetailTransaction;
+
+use DateTime;
+use DateInterval;
+use DatePeriod;
 
 use Carbon\Carbon;
 
@@ -190,27 +196,15 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        for ($i = 1; $i <= 100; $i++) {
-            $amount_of_product = rand(5, 15);
-            $product_price = (10000 * $i) / 2;
-            $total_price = $amount_of_product * $product_price;
 
-            ProductHistory::create([
-                'history_category' => 'in',
-                'history_date' => Carbon::now()->format('Y-m-d'),
-                'amount_of_product' => $amount_of_product,
-                'product_price' => $product_price,
-                'total_price' => $total_price,
-                'product_expired_date' => Carbon::now()->addYears(2)->format('Y-m-d'),
-                'product_id' => $i,
-                'created_by' => $employee['id'],
-                'updated_by' => null,
-                'deleted_by' => null,
-                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                'deleted_at' => null,
-            ]);
-        }
+
+
+
+
+
+
+
+
 
         for ($i = 1; $i <= 10; $i++) {
             City::create([
@@ -251,6 +245,109 @@ class DatabaseSeeder extends Seeder
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
             ])->getAttributes();
+        }
+
+
+
+
+
+
+
+
+
+
+
+        //product history
+        $begin = new DateTime('2022-01-01');
+        $end = new DateTime('2027-01-01');
+
+        $interval = DateInterval::createFromDateString('1 day');
+        $period = new DatePeriod($begin, $interval, $end);
+
+        foreach ($period as $dt) {
+            $product_id = rand(1, 100);
+            $amount_of_product = rand(50, 100);
+            $product_price = (10000 * $product_id) / 2;
+            $total_price = $amount_of_product * $product_price;
+
+            ProductHistory::create([
+                'history_category' => 'in',
+                'history_date' => $dt,
+                'amount_of_product' => $amount_of_product,
+                'product_price' => $product_price,
+                'total_price' => $total_price,
+                'product_expired_date' => Carbon::now()->addYears(12)->format('Y-m-d'),
+                'product_id' => $product_id,
+                'created_by' => $employee['id'],
+                'updated_by' => null,
+                'deleted_by' => null,
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'deleted_at' => null,
+            ]);
+        }
+
+        foreach ($period as $dt) {
+            $product_id = rand(1, 100);
+            $amount_of_product = rand(10, 20);
+            $product_price = (10000 * $product_id);
+            $total_price = $amount_of_product * $product_price;
+
+            ProductHistory::create([
+                'history_category' => 'out',
+                'history_date' => $dt,
+                'amount_of_product' => $amount_of_product,
+                'product_price' => $product_price,
+                'total_price' => $total_price,
+                'product_expired_date' => Carbon::now()->addYears(2)->format('Y-m-d'),
+                'product_id' => $product_id,
+                'created_by' => $employee['id'],
+                'updated_by' => null,
+                'deleted_by' => null,
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'deleted_at' => null,
+            ]);
+        }
+
+        // transaction
+        foreach ($period as $dt) {
+            // $product_id = rand(1, 100);
+            $lopfu = rand(10, 20);
+            $transaction = Transaction::create([
+                'subtotal_price' => 1,
+                'tax' => 2,
+                'shipping_cost' => 3,
+                'grand_total_price' => 6,
+                'message' => '10',
+                'total_volume_product' => 10,
+                'receipt_of_payment' => 'no-image.jpg',
+                'customer_id' => $customer['id'],
+                'address_id' => rand(1, 10),
+                'bank_payment_id' => rand(1, 10),
+                'transaction_status_id' => rand(6,7),
+                'created_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
+            ])->getAttributes();
+
+            //detail transaction
+            for ($i = 1; $i <= $lopfu; $i++) {
+                $status = ['success', 'fail'];
+                DetailTransaction::create([
+                    // 'amount_of_product' => $lopfu,
+                    // 'product_price' => $lopfu,
+                    // 'total_price' => $lopfu*$lopfu,
+
+                    'amount_of_product' => 1,
+                    'product_price' => 1,
+                    'total_price' => 2,
+                    'status' => $status[rand(0,1)],
+                    'transaction_id' => $transaction['id'],
+                    'product_id' => 1,
+                    'created_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
+                    'updated_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
+                ]);
+            }
         }
     }
 }

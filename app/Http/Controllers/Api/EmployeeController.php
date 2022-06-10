@@ -27,6 +27,7 @@ class EmployeeController extends Controller
             $employee = Employee::leftJoin('roles', 'employees.role_id', '=', 'roles.id')
                 ->leftJoin('users', 'employees.user_id', '=', 'users.id')
                 ->withTrashed()
+                ->where('name', '!=', 'Super Admin')
                 ->orderBy('employees.deleted_at', 'DESC')
                 ->get([
                     'roles.name AS role',
@@ -255,7 +256,7 @@ class EmployeeController extends Controller
 
         $rule = [
             'email' => ['required', 'email:rfc,dns', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => 'nullable',
+            'password' => 'nullable|min:8',
             'name' => 'required|max:100',
             'gander' => 'required|in:man,woman',
             'phone' => ['required', 'regex:/\(?(?:\+62|62|0)(?:\d{2,3})?\)?[ .-]?\d{2,4}[ .-]?\d{2,4}[ .-]?\d{2,4}/i'],
@@ -280,6 +281,7 @@ class EmployeeController extends Controller
             'in' => ':attribute tidak valid.',
             'email' => ':attribute tidak sesuai format.',
             'unique' => ':attribute sudah terdaftar.',
+            'min' => ':attribute hanya dapat memuat minimal :min karakter.',
             'max' => ':attribute hanya dapat memuat maksimal :max karakter.',
             'regex' => ':attribute tidak valid.',
             'date' => ':attribute hanya dapat memuat data berupa tanggal.',
