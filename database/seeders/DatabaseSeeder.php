@@ -258,8 +258,8 @@ class DatabaseSeeder extends Seeder
 
 
         //product history
-        $begin = new DateTime('2022-01-01');
-        $end = new DateTime('2027-01-01');
+        $begin = new DateTime('2017-01-01');
+        $end = new DateTime('2023-01-01');
 
         $interval = DateInterval::createFromDateString('1 day');
         $period = new DatePeriod($begin, $interval, $end);
@@ -325,7 +325,7 @@ class DatabaseSeeder extends Seeder
                 'customer_id' => $customer['id'],
                 'address_id' => rand(1, 10),
                 'bank_payment_id' => rand(1, 10),
-                'transaction_status_id' => rand(6,7),
+                'transaction_status_id' => rand(5,6),
                 'created_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
             ])->getAttributes();

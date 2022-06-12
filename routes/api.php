@@ -87,4 +87,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/laporanStockTahunan/{id}/{yearStart}/{yearEnd}', [LaporanController::class, 'laporanStockTahunan']);
     Route::get('/laporanPendapatanTahunan/{yearStart}/{yearEnd}', [LaporanController::class, 'laporanPendapatanTahunan']);
     Route::get('/laporanPenjualanTahunan/{id}/{yearStart}/{yearEnd}', [LaporanController::class, 'laporanPenjualanTahunan']);
+
+    Route::get('/dashboardProdukTerjual/{year}', [LaporanController::class, 'dashboardProdukTerjual']);
+    Route::get('/dashboardJumlahTransaksi/{year}', [LaporanController::class, 'dashboardJumlahTransaksi']);
 });
