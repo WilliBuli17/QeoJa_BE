@@ -29,7 +29,7 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->foreignId('suplier_id')
                 ->nullable()
-                ->constrained('supliers')
+                ->constrained('suppliers')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
             $table->timestamps();

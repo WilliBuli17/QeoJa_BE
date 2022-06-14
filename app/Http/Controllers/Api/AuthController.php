@@ -43,7 +43,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Log In Gagal -> ' . $validator->errors(),
+                'message' => 'Log In Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 

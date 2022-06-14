@@ -28,6 +28,7 @@ class TransactionShippingController extends Controller
                 ->leftJoin('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
                 ->leftJoin('addresses', 'transactions.address_id', '=', 'addresses.id')
                 ->leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
+                ->orderBy('transaction_shippings.created_at', 'DESC')
                 ->get([
                     'transaction_shippings.*',
                     'customers.name AS customer',
@@ -61,72 +62,6 @@ class TransactionShippingController extends Controller
             $response = [
                 'status' => 'fails',
                 'message' => 'Mengambil Data Pengiriman Transaksi Gagal -> Server Error',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        try {
-            $transactionShipping = TransactionShipping::leftJoin('transactions', 'transaction_shippings.transaction_id', '=', 'transactions.id')
-                ->leftJoin('customers', 'transactions.customer_id', '=', 'customers.id')
-                ->leftJoin('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
-                ->leftJoin('addresses', 'transactions.address_id', '=', 'addresses.id')
-                ->leftJoin('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
-                ->leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
-                ->where('transactions.customer_id', '=', $id)
-                ->orderBy('transactions.transaction_status_id', 'ASC')
-                ->get([
-                    'customers.name AS name',
-                    'cities.name AS city',
-                    'addresses.address',
-                    'transaction_statuses.name AS status',
-                    'transactions.id',
-                    'transactions.message',
-                    'transactions.receipt_of_payment',
-                    'transactions.subtotal_price',
-                    'transactions.tax',
-                    'transactions.shipping_cost',
-                    'transactions.grand_total_price',
-                    'transactions.bank_payment_id',
-                    'transactions.created_at',
-                    'transaction_shippings.id as idKey',
-                    'transaction_shippings.delivery_date',
-                    'transaction_shippings.arrived_date',
-                    'bank_payments.bank_name',
-                    'bank_payments.account_name',
-                ]);
-
-            if (!is_null($transactionShipping)) {
-                $response = [
-                    'status' => 'success',
-                    'message' => 'Mencari Data Pengiriman Transaksi Sukses',
-                    'data' => $transactionShipping,
-                ];
-
-                return response()->json($response, Response::HTTP_OK);
-            }
-
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Pengiriman Transaksi Gagal -> Data Kosong',
-                'data' => null,
-            ];
-
-            return response()->json($response, Response::HTTP_NOT_FOUND);
-        } catch (QueryException $e) {
-            $response = [
-                'status' => 'fails',
-                'message' => 'Mencari Data Pengiriman Transaksi Gagal -> Server Error',
                 'data' => null,
             ];
 

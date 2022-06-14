@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\SuplierController;
+use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductHistoryController;
 use App\Http\Controllers\Api\CartController;
@@ -33,7 +33,7 @@ use App\Http\Controllers\Api\LaporanController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/supplierCustomer', [SuplierController::class, 'index']);
+Route::get('/supplierCustomer', [SupplierController::class, 'index']);
 Route::get('/categoryCustomer', [CategoryController::class, 'index']);
 Route::get('/productCustomer', [ProductController::class, 'show']);
 
@@ -55,7 +55,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::resource('/category', CategoryController::class)->except(['create', 'edit', 'show']);
 
-    Route::resource('/supplier', SuplierController::class)->except(['create', 'edit', 'show']);
+    Route::resource('/supplier', SupplierController::class)->except(['create', 'edit', 'show']);
 
     Route::resource('/product', ProductController::class)->except(['create', 'edit', 'update', 'show']);
     Route::post('/product/{id}', [ProductController::class, 'update']);
@@ -67,11 +67,11 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/cart/{id}', [CartController::class, 'index']);
     Route::delete('/cartReset/{id}', [CartController::class, 'destroyMultiple']);
 
-    Route::resource('/bankPayment', BankPaymentController::class)->except(['create', 'edit']);
+    Route::resource('/bankPayment', BankPaymentController::class)->except(['create', 'edit', 'show']);
 
     Route::resource('/transactionStatus', TransactionStatusController::class)->except(['create', 'edit', 'show']);
 
-    Route::resource('/transaction', TransactionController::class)->except(['create', 'edit', 'destroy', 'update', 'show']);
+    Route::resource('/transaction', TransactionController::class)->except(['create', 'edit', 'destroy', 'update']);
     Route::post('/transaction/{id}', [TransactionController::class, 'update']);
 
     Route::resource('/detailTransaction', DetailTransactionController::class)->except(['create', 'edit', 'index', 'store']);
@@ -79,7 +79,7 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('/expeditionTruck', ExpeditionTruckController::class)->except(['create', 'edit', 'update', 'show']);
     Route::post('/expeditionTruck/{id}', [ExpeditionTruckController::class, 'update']);
 
-    Route::resource('/transactionShipping', TransactionShippingController::class)->except(['create', 'edit']);
+    Route::resource('/transactionShipping', TransactionShippingController::class)->except(['create', 'edit', 'show']);
 
     Route::get('/laporanStockBulanan/{id}/{year}', [LaporanController::class, 'laporanStockBulanan']);
     Route::get('/laporanPendapatanBulanan/{year}', [LaporanController::class, 'laporanPendapatanBulanan']);

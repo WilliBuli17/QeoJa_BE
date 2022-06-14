@@ -26,11 +26,13 @@ class ProductHistoryController extends Controller
                 ->leftJoin('employees as update', 'product_histories.updated_by', '=', 'update.id')
                 ->leftJoin('employees as delete', 'product_histories.deleted_by', '=', 'delete.id')
                 ->withTrashed()
+                ->orderBy('product_histories.created_at', 'DESC')
                 ->get([
                     'create.name as created_by_name',
                     'update.name as updated_by_name',
                     'delete.name as deleted_by_name',
                     'products.unit',
+                    'products.name',
                     'product_histories.id',
                     'product_histories.history_category',
                     'product_histories.history_date',

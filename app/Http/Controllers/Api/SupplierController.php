@@ -7,12 +7,12 @@ use Illuminate\Http\Request;
 
 // Add new library
 use Illuminate\Validation\Rule;
-use App\Models\Suplier;
+use App\Models\Supplier;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
-class SuplierController extends Controller
+class SupplierController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -22,13 +22,13 @@ class SuplierController extends Controller
     public function index()
     {
         try {
-            $suplier = Suplier::orderBy('supliers.id')
-                ->get(['supliers.id', 'supliers.name']);
+            $suplier = Supplier::orderBy('suppliers.id')
+                ->get(['suppliers.id', 'suppliers.name']);
 
             if (count($suplier) > 0) {
                 $response = [
                     'status' => 'success',
-                    'message' => 'Mengambil Data Suplier Sukses',
+                    'message' => 'Mengambil Data Supplier Sukses',
                     'data' => $suplier,
                 ];
 
@@ -37,7 +37,7 @@ class SuplierController extends Controller
 
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengambil Data Suplier Gagal -> Data Kosong',
+                'message' => 'Mengambil Data Supplier Gagal -> Data Kosong',
                 'data' => null,
             ];
 
@@ -45,7 +45,7 @@ class SuplierController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengambil Data Suplier Gagal -> Server Error',
+                'message' => 'Mengambil Data Supplier Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -62,7 +62,7 @@ class SuplierController extends Controller
     public function store(Request $request)
     {
         $rule = [
-            'name' => 'required|max:100|unique:supliers'
+            'name' => 'required|max:100|unique:suppliers'
         ];
 
         $input = [
@@ -80,7 +80,7 @@ class SuplierController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Suplier Gagal -> ' . $validator->errors()->first(),
+                'message' => 'Menambah Data Supplier Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -88,11 +88,11 @@ class SuplierController extends Controller
         }
 
         try {
-            $suplier = Suplier::create($input);
+            $suplier = Supplier::create($input);
 
             $response = [
                 'status' => 'success',
-                'message' => 'Menambah Data Suplier Sukses',
+                'message' => 'Menambah Data Supplier Sukses',
                 'data' => $suplier,
             ];
 
@@ -100,7 +100,7 @@ class SuplierController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Suplier Gagal -> Server Error',
+                'message' => 'Menambah Data Supplier Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -117,12 +117,12 @@ class SuplierController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $suplier = Suplier::find($id);
+        $suplier = Supplier::find($id);
 
         if (is_null($suplier)) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Suplier Gagal -> Data Tidak Ditemukan',
+                'message' => 'Mengubah Data Supplier Gagal -> Data Tidak Ditemukan',
                 'data' => null,
             ];
 
@@ -130,7 +130,7 @@ class SuplierController extends Controller
         }
 
         $rule = [
-            'name' => ['required', 'max:100', Rule::unique('supliers', 'name')->ignore($id)]
+            'name' => ['required', 'max:100', Rule::unique('suppliers', 'name')->ignore($id)]
         ];
 
         $input = [
@@ -148,7 +148,7 @@ class SuplierController extends Controller
         if ($validator->fails()) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Suplier Gagal -> ' . $validator->errors()->first(),
+                'message' => 'Mengubah Data Supplier Gagal -> ' . $validator->errors()->first(),
                 'data' => null,
             ];
 
@@ -160,7 +160,7 @@ class SuplierController extends Controller
 
             $response = [
                 'status' => 'success',
-                'message' => 'Mengubah Data Suplier Sukses',
+                'message' => 'Mengubah Data Supplier Sukses',
                 'data' => $suplier,
             ];
 
@@ -168,7 +168,7 @@ class SuplierController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Mengubah Data Suplier Gagal -> Server Error',
+                'message' => 'Mengubah Data Supplier Gagal -> Server Error',
                 'data' => null,
             ];
 
@@ -184,12 +184,12 @@ class SuplierController extends Controller
      */
     public function destroy($id)
     {
-        $suplier = Suplier::find($id);
+        $suplier = Supplier::find($id);
 
         if (is_null($suplier)) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menghapus Data Suplier Gagal -> Data Tidak Ditemukan',
+                'message' => 'Menghapus Data Supplier Gagal -> Data Tidak Ditemukan',
                 'data' => null,
             ];
 
@@ -201,7 +201,7 @@ class SuplierController extends Controller
 
             $response = [
                 'status' => 'success',
-                'message' => 'Menghapus Data Suplier Sukses',
+                'message' => 'Menghapus Data Supplier Sukses',
                 'data' => $suplier,
             ];
 
@@ -209,7 +209,7 @@ class SuplierController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menghapus Data Suplier Gagal -> Server Error',
+                'message' => 'Menghapus Data Supplier Gagal -> Server Error',
                 'data' => null,
             ];
 

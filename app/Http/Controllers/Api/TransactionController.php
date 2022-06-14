@@ -77,6 +77,72 @@ class TransactionController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        try {
+            $transaction = Transaction::leftJoin('transaction_shippings', 'transactions.id', '=', 'transaction_shippings.transaction_id')
+                ->leftJoin('customers', 'transactions.customer_id', '=', 'customers.id')
+                ->leftJoin('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
+                ->leftJoin('addresses', 'transactions.address_id', '=', 'addresses.id')
+                ->leftJoin('bank_payments', 'transactions.bank_payment_id', '=', 'bank_payments.id')
+                ->leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
+                ->where('transactions.customer_id', '=', $id)
+                ->orderBy('transactions.transaction_status_id', 'ASC')
+                ->get([
+                    'customers.name AS name',
+                    'cities.name AS city',
+                    'addresses.address',
+                    'transaction_statuses.name AS status',
+                    'transactions.id',
+                    'transactions.message',
+                    'transactions.receipt_of_payment',
+                    'transactions.subtotal_price',
+                    'transactions.tax',
+                    'transactions.shipping_cost',
+                    'transactions.grand_total_price',
+                    'transactions.bank_payment_id',
+                    'transactions.created_at',
+                    'transaction_shippings.id as idKey',
+                    'transaction_shippings.delivery_date',
+                    'transaction_shippings.arrived_date',
+                    'bank_payments.bank_name',
+                    'bank_payments.account_name',
+                ]);
+
+            if (!is_null($transaction)) {
+                $response = [
+                    'status' => 'success',
+                    'message' => 'Mencari Data Transaksi Sukses',
+                    'data' => $transaction,
+                ];
+
+                return response()->json($response, Response::HTTP_OK);
+            }
+
+            $response = [
+                'status' => 'fails',
+                'message' => 'Mencari Data Transaksi Gagal -> Data Kosong',
+                'data' => null,
+            ];
+
+            return response()->json($response, Response::HTTP_NOT_FOUND);
+        } catch (QueryException $e) {
+            $response = [
+                'status' => 'fails',
+                'message' => 'Mencari Data Transaksi Gagal -> Server Error',
+                'data' => null,
+            ];
+
+            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request

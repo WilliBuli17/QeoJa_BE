@@ -24,13 +24,13 @@ class ProductController extends Controller
     {
         try {
             $product = Product::leftJoin('categories', 'products.category_id', '=', 'categories.id')
-                ->leftJoin('supliers', 'products.suplier_id', '=', 'supliers.id')
+                ->leftJoin('suppliers', 'products.suplier_id', '=', 'suppliers.id')
                 ->withTrashed()
                 ->orderBy('products.deleted_at', 'DESC')
                 ->orderBy('products.stock_quantity', 'ASC')
                 ->get([
                     'categories.name AS category',
-                    'supliers.name AS suplier',
+                    'suppliers.name AS suplier',
                     'products.id',
                     'products.name',
                     'products.description',
@@ -81,13 +81,12 @@ class ProductController extends Controller
     {
         try {
             $product = Product::leftJoin('categories', 'products.category_id', '=', 'categories.id')
-                ->leftJoin('supliers', 'products.suplier_id', '=', 'supliers.id')
+                ->leftJoin('suppliers', 'products.suplier_id', '=', 'suppliers.id')
                 ->where('products.stock_quantity', '>',  0)
-                ->orderBy('products.deleted_at', 'DESC')
                 ->orderBy('products.stock_quantity', 'ASC')
                 ->get([
                     'categories.name AS category',
-                    'supliers.name AS suplier',
+                    'suppliers.name AS suplier',
                     'products.id',
                     'products.name',
                     'products.description',
@@ -98,7 +97,6 @@ class ProductController extends Controller
                     'products.category_id',
                     'products.suplier_id',
                     'products.picture',
-                    'products.deleted_at'
                 ]);
 
             if (count($product) > 0) {

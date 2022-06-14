@@ -23,7 +23,7 @@ class AddressController extends Controller
         try {
             $address = Address::leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
                 ->where('addresses.customer_id', '=', $id)
-                ->orderBy('addresses.created_at', 'ASC')
+                ->orderBy('addresses.created_at', 'DESC')
                 ->get([
                     'cities.name as city',
                     'cities.expedition_cost',
