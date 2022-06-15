@@ -67,7 +67,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/cart/{id}', [CartController::class, 'index']);
     Route::delete('/cartReset/{id}', [CartController::class, 'destroyMultiple']);
 
-    Route::resource('/bankPayment', BankPaymentController::class)->except(['create', 'edit', 'show']);
+    Route::resource('/bankPayment', BankPaymentController::class)->except(['create', 'edit']);
 
     Route::resource('/transactionStatus', TransactionStatusController::class)->except(['create', 'edit', 'show']);
 

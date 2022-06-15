@@ -13,32 +13,36 @@ return new class extends Migration
     public function up()
     {
         DB::unprepared('
-            CREATE OR REPLACE FUNCTION update_product_stock_transaction()
-            RETURNS trigger AS $$
+            CREATE OR REPLACE TRIGGER trigger_product_and_detail_transaction_insert
+                AFTER INSERT ON detail_transactions
+                FOR EACH ROW
             BEGIN
-                IF TG_OP = \'INSERT\' THEN
-                    UPDATE products
-                    SET stock_quantity = stock_quantity - NEW.amount_of_product
-                    WHERE products.id = NEW.product_id;
-
-                ELSIF TG_OP = \'UPDATE\' THEN
-                    UPDATE products
-                    SET stock_quantity = stock_quantity + OLD.amount_of_product - NEW.amount_of_product
-                    WHERE products.id = NEW.product_id;
-
-                ELSIF TG_OP = \'DELETE\' THEN
-                    UPDATE products
-                    SET stock_quantity = stock_quantity + OLD.amount_of_product
-                    WHERE products.id = OLD.product_id;
-                END IF;
-                RETURN NULL;
+                UPDATE products
+                SET stock_quantity = stock_quantity - NEW.amount_of_product
+                WHERE products.id = NEW.product_id;
             END
-            $$ LANGUAGE plpgsql;
+        ');
 
-            CREATE OR REPLACE TRIGGER trigger_product_and_detail_transaction
-            AFTER INSERT OR UPDATE OR DELETE ON detail_transactions
-            FOR EACH ROW
-            EXECUTE PROCEDURE update_product_stock_transaction()
+        DB::unprepared('
+            CREATE OR REPLACE TRIGGER trigger_product_and_detail_transaction_update
+                AFTER UPDATE ON detail_transactions
+                FOR EACH ROW
+            BEGIN
+                UPDATE products
+                SET stock_quantity = stock_quantity + OLD.amount_of_product - NEW.amount_of_product
+                WHERE products.id = NEW.product_id;
+            END
+        ');
+
+        DB::unprepared('
+            CREATE OR REPLACE TRIGGER trigger_product_and_detail_transaction_delete
+                AFTER DELETE ON detail_transactions
+                FOR EACH ROW
+            BEGIN
+                UPDATE products
+                SET stock_quantity = stock_quantity + OLD.amount_of_product
+                WHERE products.id = OLD.product_id;
+            END
         ');
     }
 
@@ -49,9 +53,8 @@ return new class extends Migration
      */
     public function down()
     {
-        DB::unprepared('
-        DROP TRIGGER \'trigger_product_and_detail_transaction\'
-        DROP FUNCTION update_product_stock_transaction
-        ');
+        DB::unprepared('DROP TRIGGER \'trigger_product_and_detail_transaction_insert\'');
+        DB::unprepared('DROP TRIGGER \'trigger_product_and_detail_transaction_update\'');
+        DB::unprepared('DROP TRIGGER \'trigger_product_and_detail_transaction_delete\'');
     }
 };

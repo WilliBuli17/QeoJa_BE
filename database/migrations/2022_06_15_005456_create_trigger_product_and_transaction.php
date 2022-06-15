@@ -13,31 +13,23 @@ return new class extends Migration
     public function up()
     {
         DB::unprepared('
-            CREATE OR REPLACE FUNCTION update_product_stock_transaction_status()
-            RETURNS trigger AS $$
+            CREATE OR REPLACE TRIGGER trigger_product_and_transaction
+                AFTER UPDATE ON transactions
+                FOR EACH ROW
             BEGIN
                 IF ((NEW.transaction_status_id = 7) AND (OLD.transaction_status_id != 7)) THEN
                     UPDATE products
+                    INNER JOIN detail_transactions ON (products.id = product_id)
                     SET stock_quantity = stock_quantity + amount_of_product
-                    FROM detail_transactions
-                    WHERE products.id = product_id
-                    AND transaction_id = NEW.id;
+                    WHERE transaction_id = NEW.id;
 
-                ELSIF ((OLD.transaction_status_id = 7) AND (NEW.transaction_status_id != 7)) THEN
+                ELSEIF ((OLD.transaction_status_id = 7) AND (NEW.transaction_status_id != 7)) THEN
                     UPDATE products
+                    INNER JOIN detail_transactions ON (products.id = product_id)
                     SET stock_quantity = stock_quantity - amount_of_product
-                    FROM detail_transactions
-                    WHERE products.id = product_id
-                    AND transaction_id = NEW.id;
+                    WHERE transaction_id = NEW.id;
                 END IF;
-                RETURN NULL;
             END
-            $$ LANGUAGE plpgsql;
-
-            CREATE OR REPLACE TRIGGER trigger_product_and_transaction
-            AFTER UPDATE ON transactions
-            FOR EACH ROW
-            EXECUTE PROCEDURE update_product_stock_transaction_status()
         ');
     }
 
@@ -48,9 +40,6 @@ return new class extends Migration
      */
     public function down()
     {
-        DB::unprepared('
-        DROP TRIGGER \'trigger_product_and_transaction\'
-        DROP FUNCTION update_product_stock_transaction_status
-        ');
+        DB::unprepared('DROP TRIGGER \'trigger_product_and_transaction\'');
     }
 };

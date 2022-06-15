@@ -54,6 +54,47 @@ class BankPaymentController extends Controller
         }
     }
 
+        /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        try {
+            $bankPayment = BankPayment::find($id);
+
+            $bankPayment->makeHidden(['created_at', 'updated_at']);
+
+            if (!is_null($bankPayment)) {
+                $response = [
+                    'status' => 'success',
+                    'message' => 'Mencari Data Bank Sukses',
+                    'data' => $bankPayment,
+                ];
+
+                return response()->json($response, Response::HTTP_OK);
+            }
+
+            $response = [
+                'status' => 'fails',
+                'message' => 'Mencari Data Bank Gagal -> Data Kosong',
+                'data' => null,
+            ];
+
+            return response()->json($response, Response::HTTP_NOT_FOUND);
+        } catch (QueryException $e) {
+            $response = [
+                'status' => 'fails',
+                'message' => 'Mencari Data Bank Gagal -> Server Error',
+                'data' => null,
+            ];
+
+            return response()->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      *

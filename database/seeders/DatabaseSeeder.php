@@ -372,8 +372,7 @@ class DatabaseSeeder extends Seeder
 
         // transaction
         foreach ($period as $dt) {
-            // $loop_collection = rand(10, 20);
-            $loop_collection = rand(1, 3);
+            $loop_collection = rand(10, 20);
             $collection = new Collection;
             $subtotal = 0;
             $total_volume = 0;
