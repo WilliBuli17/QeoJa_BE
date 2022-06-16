@@ -120,11 +120,11 @@ class DatabaseSeeder extends Seeder
         ])->getAttributes();
 
         $imageProfil =  [
-            'pexels-eberhard-grossgasteiger-1612367.jpg',
-            'pexels-karolina-grabowska-4226881.jpg',
-            'pexels-sergey-meshkov-8478389.jpg',
-            'Wallpaper.jpg',
-            'wp8794051-3440x1440-aesthetic-wallpapers.png',
+            '1.jpg',
+            '2.jpg',
+            '3.jpg',
+            '1.jpg',
+            '5.jpg',
         ];
 
         for ($i = 1; $i <= 5; $i++) {

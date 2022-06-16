@@ -204,6 +204,13 @@ class TransactionController extends Controller
                 WHERE carts.customer_id = ' . $transaction->customer_id . '
             ');
 
+            DB::unprepared('
+                UPDATE products
+                INNER JOIN carts ON (products.id = product_id)
+                SET stock_quantity = stock_quantity - amount_of_product
+                WHERE customer_id = ' . $transaction->customer_id . '
+            ');
+
             $response = [
                 'status' => 'success',
                 'message' => 'Menambah Data Transaksi Sukses',
@@ -214,7 +221,7 @@ class TransactionController extends Controller
         } catch (QueryException $e) {
             $response = [
                 'status' => 'fails',
-                'message' => 'Menambah Data Transaksi Gagal -> Server Error ' . $e->getMessage(),
+                'message' => 'Menambah Data Transaksi Gagal -> Server Error',
                 'data' => null,
             ];
 

@@ -36,6 +36,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/supplierCustomer', [SupplierController::class, 'index']);
 Route::get('/categoryCustomer', [CategoryController::class, 'index']);
 Route::get('/productCustomer', [ProductController::class, 'show']);
+Route::post('/customerStore', [CustomerController::class, 'store']);
 
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
