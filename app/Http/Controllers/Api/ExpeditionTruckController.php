@@ -23,7 +23,8 @@ class ExpeditionTruckController extends Controller
     public function index()
     {
         try {
-            $expeditionTruck = ExpeditionTruck::orderBy('expedition_trucks.id')
+            $expeditionTruck = ExpeditionTruck::orderBy('expedition_trucks.status', 'ASC')
+                ->orderBy('expedition_trucks.updated_at', 'DESC')
                 ->get([
                     'expedition_trucks.id',
                     'expedition_trucks.license_id',

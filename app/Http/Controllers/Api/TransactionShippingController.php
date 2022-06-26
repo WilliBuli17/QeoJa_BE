@@ -28,7 +28,8 @@ class TransactionShippingController extends Controller
                 ->leftJoin('transaction_statuses', 'transactions.transaction_status_id', '=', 'transaction_statuses.id')
                 ->leftJoin('addresses', 'transactions.address_id', '=', 'addresses.id')
                 ->leftJoin('cities', 'addresses.city_id', '=', 'cities.id')
-                ->orderBy('transaction_shippings.created_at', 'DESC')
+                ->orderBy('transaction_statuses.id')
+                ->orderBy('transaction_shippings.arrived_date')
                 ->get([
                     'transaction_shippings.*',
                     'customers.name AS customer',

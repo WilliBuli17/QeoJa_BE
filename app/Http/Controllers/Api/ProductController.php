@@ -26,7 +26,7 @@ class ProductController extends Controller
             $product = Product::leftJoin('categories', 'products.category_id', '=', 'categories.id')
                 ->leftJoin('suppliers', 'products.suplier_id', '=', 'suppliers.id')
                 ->withTrashed()
-                ->orderBy('products.deleted_at', 'DESC')
+                ->orderBy('products.deleted_at', 'ASC')
                 ->orderBy('products.stock_quantity', 'ASC')
                 ->get([
                     'categories.name AS category',

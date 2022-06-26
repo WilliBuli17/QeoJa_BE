@@ -24,7 +24,7 @@ class CartController extends Controller
         try {
             $cart = Cart::leftJoin('products', 'carts.product_id', '=', 'products.id')
                 ->where('carts.customer_id', '=', $id)
-                ->orderBy('carts.product_id')
+                ->orderBy('carts.created_at', 'DESC')
                 ->get([
                     'products.name',
                     'products.price',

@@ -22,7 +22,7 @@ class CategoryController extends Controller
     public function index()
     {
         try {
-            $category = Category::orderBy('categories.id')
+            $category = Category::orderBy('categories.updated_at', 'DESC')
                 ->get(['categories.id', 'categories.name']);
 
             if (count($category) > 0) {

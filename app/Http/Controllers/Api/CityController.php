@@ -22,7 +22,7 @@ class CityController extends Controller
     public function index()
     {
         try {
-            $city = City::orderBy('cities.id')
+            $city = City::orderBy('cities.updated_at', 'DESC')
                 ->get(['cities.id', 'cities.name', 'cities.expedition_cost']);
 
             if (count($city) > 0) {

@@ -22,7 +22,7 @@ class TransactionStatusController extends Controller
     public function index()
     {
         try {
-            $transactionStatus = TransactionStatus::orderBy('transaction_statuses.id')
+            $transactionStatus = TransactionStatus::orderBy('transaction_statuses.updated_at', 'DESC')
                 ->get(['transaction_statuses.id', 'transaction_statuses.name']);
 
             $transactionStatus->makeHidden(['created_at', 'updated_at']);

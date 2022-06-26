@@ -23,7 +23,7 @@ class RoleController extends Controller
     {
         try {
             $role = Role::where('name', '!=', 'Super Admin')
-                ->orderBy('roles.id')
+                ->orderBy('roles.updated_at', 'DESC')
                 ->get(['roles.id', 'roles.name']);
 
             $role->makeHidden(['created_at', 'updated_at']);

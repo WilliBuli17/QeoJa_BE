@@ -28,7 +28,7 @@ class EmployeeController extends Controller
                 ->leftJoin('users', 'employees.user_id', '=', 'users.id')
                 ->withTrashed()
                 ->where('employees.name', '!=', 'Super Admin')
-                ->orderBy('employees.deleted_at', 'DESC')
+                ->orderBy('employees.deleted_at', 'ASC')
                 ->get([
                     'roles.name AS role',
                     'users.email',

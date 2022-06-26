@@ -22,7 +22,8 @@ class BankPaymentController extends Controller
     public function index()
     {
         try {
-            $bankPayment = BankPayment::all();
+            $bankPayment = BankPayment::orderBy('bank_payments.updated_at', 'DESC')
+            ->get();
 
             $bankPayment->makeHidden(['created_at', 'updated_at']);
 

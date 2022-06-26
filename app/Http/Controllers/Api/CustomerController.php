@@ -26,7 +26,7 @@ class CustomerController extends Controller
         try {
             $customer = Customer::leftJoin('users', 'customers.user_id', '=', 'users.id')
                 ->withTrashed()
-                ->orderBy('customers.deleted_at', 'DESC')
+                ->orderBy('customers.deleted_at', 'ASC')
                 ->get([
                     'users.email',
                     'users.email_verified_at',

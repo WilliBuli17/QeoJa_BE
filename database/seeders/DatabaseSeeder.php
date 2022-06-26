@@ -1421,52 +1421,55 @@ class DatabaseSeeder extends Seeder
 
         //product history
         $begin = new DateTime('2017-01-01');
-        $end = new DateTime('2023-01-01');
+        $end = new DateTime('2022-06-01');
 
         $interval = DateInterval::createFromDateString('1 day');
         $period = new DatePeriod($begin, $interval, $end);
 
         foreach ($period as $dt) {
-            $product_id = rand(1, 532);
-            $amount_of_product = rand(500, 1000);
-            $product_price = (1000 * $product_id);
-            $total_price = $amount_of_product * $product_price;
+            $loop_collection = rand(10, 20);
+            for ($i = 1; $i <= $loop_collection; $i++) {
+                $product_id = rand(1, 532);
+                $amount_of_product = rand(500, 1000);
+                $product_price = (1000 * $product_id);
+                $total_price = $amount_of_product * $product_price;
 
-            ProductHistory::create([
-                'history_category' => 'in',
-                'history_date' => $dt,
-                'amount_of_product' => $amount_of_product,
-                'product_price' => $product_price,
-                'total_price' => $total_price,
-                'product_expired_date' => Carbon::parse($dt)->addYears(12)->format('Y-m-d'),
-                'product_id' => $product_id,
-                'created_by' => $employee['id'],
-                'updated_by' => null,
-                'deleted_by' => null,
-                'created_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
-                'updated_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
-                'deleted_at' => null,
-            ]);
+                ProductHistory::create([
+                    'history_category' => 'in',
+                    'history_date' => $dt,
+                    'amount_of_product' => $amount_of_product,
+                    'product_price' => $product_price,
+                    'total_price' => $total_price,
+                    'product_expired_date' => Carbon::parse($dt)->addYears(12)->format('Y-m-d'),
+                    'product_id' => $product_id,
+                    'created_by' => $employee['id'],
+                    'updated_by' => null,
+                    'deleted_by' => null,
+                    'created_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
+                    'updated_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
+                    'deleted_at' => null,
+                ]);
 
-            $amount_of_product = rand(10, 20);
-            $product_price = (1500 * $product_id);
-            $total_price = $amount_of_product * $product_price;
+                $amount_of_product = rand(10, 20);
+                $product_price = (1500 * $product_id);
+                $total_price = $amount_of_product * $product_price;
 
-            ProductHistory::create([
-                'history_category' => 'out',
-                'history_date' => $dt,
-                'amount_of_product' => $amount_of_product,
-                'product_price' => $product_price,
-                'total_price' => $total_price,
-                'product_expired_date' => Carbon::parse($dt)->format('Y-m-d'),
-                'product_id' => $product_id,
-                'created_by' => $employee['id'],
-                'updated_by' => null,
-                'deleted_by' => null,
-                'created_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
-                'updated_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
-                'deleted_at' => null,
-            ]);
+                ProductHistory::create([
+                    'history_category' => 'out',
+                    'history_date' => $dt,
+                    'amount_of_product' => $amount_of_product,
+                    'product_price' => $product_price,
+                    'total_price' => $total_price,
+                    'product_expired_date' => Carbon::parse($dt)->format('Y-m-d'),
+                    'product_id' => $product_id,
+                    'created_by' => $employee['id'],
+                    'updated_by' => null,
+                    'deleted_by' => null,
+                    'created_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
+                    'updated_at' => Carbon::parse($dt)->format('Y-m-d H:i:s'),
+                    'deleted_at' => null,
+                ]);
+            }
         }
 
         // transaction

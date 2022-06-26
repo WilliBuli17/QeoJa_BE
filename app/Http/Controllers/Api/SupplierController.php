@@ -22,7 +22,7 @@ class SupplierController extends Controller
     public function index()
     {
         try {
-            $suplier = Supplier::orderBy('suppliers.id')
+            $suplier = Supplier::orderBy('suppliers.updated_at', 'DESC')
                 ->get(['suppliers.id', 'suppliers.name']);
 
             if (count($suplier) > 0) {
